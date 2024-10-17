@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UsertypeService } from '../usertype/usertype.service';
 import { BcryptUtil } from '../utils/bcrypt.util';
 import { UserType } from '../usertype/usertype.entity';
+import { v4 as uuid4 } from 'uuid';
 
 @Injectable()
 export class UsersService {
@@ -21,11 +22,24 @@ export class UsersService {
   }
 
   async findUserByEmail(email: string): Promise<User> {
-    return await this.userRepository.findOneBy({ email });
+    return await this.userRepository.findOne({
+      where: { email },
+      relations: ['userType'], // Include the userType relation
+    });
+  }
+
+  async findUserById(userId: string): Promise<User> {
+    return await this.userRepository.findOne({
+      where: { userId },
+      relations: ['userType'],
+    });
   }
 
   async getUserTypeFromId(userId: string): Promise<UserType> {
-    const user: User = await this.userRepository.findOneBy({ userId });
+    const user: User = await this.userRepository.findOne({
+      where: { userId },
+      relations: ['userType'], // Include the userType relation
+    });
     if (user == null) {
       throw new BadRequestException('User not found');
     }
@@ -37,11 +51,12 @@ export class UsersService {
     if (user != null) {
       throw new BadRequestException('User already exists');
     }
-
     const userType = this.userTypeService.findById(userData.userTypeId);
+    const hashedPassword = await this.bcrypt.hashPassword(userData.password);
     const newUser = this.userRepository.create({
       ...userData,
-      password: await this.bcrypt.hashPassword(userData.password),
+      userId: uuid4(),
+      password: hashedPassword,
       userType: await userType,
     });
     return await this.userRepository.save(newUser);

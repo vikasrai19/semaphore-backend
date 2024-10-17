@@ -8,6 +8,7 @@ import { StatusModule } from './status/status.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { datasourceOptions } from '../db/data-source';
 import { BcryptUtil } from './utils/bcrypt.util';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BcryptUtil } from './utils/bcrypt.util';
     AuthModule,
     UsertypeModule,
     StatusModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

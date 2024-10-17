@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 
 export class BcryptUtil {
-  saltOrRounds: number = 32;
+  saltOrRounds: number = 12;
 
   async hashPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, this.saltOrRounds);

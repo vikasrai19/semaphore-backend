@@ -9,6 +9,6 @@ export class UserType {
   userType: string;
   @Column()
   orderNo: number;
-  @OneToMany(() => User, (userType) => userType.userType)
+  @OneToMany(() => User, (user) => user.userType)
   users: User[];
 }

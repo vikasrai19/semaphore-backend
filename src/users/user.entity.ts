@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { UserType } from '../usertype/usertype.entity';
 
 @Entity('Users')
@@ -14,6 +14,7 @@ export class User {
   @Column()
   password: string;
   @ManyToOne(() => UserType, (userType) => userType.users)
+  @JoinColumn({ name: 'userTypeId' })
   userType: UserType;
   @Column({ default: false })
   isEmailValid: boolean;

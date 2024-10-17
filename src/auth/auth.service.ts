@@ -5,7 +5,7 @@ import { BcryptUtil } from '../utils/bcrypt.util';
 import { JwtService } from '@nestjs/jwt';
 
 type AuthInput = { email: string; password: string };
-type SignInData = { userId: string; username: string };
+type SignInData = { userId: string; username: string; userTypeId: string, userType: string };
 type AuthResult = { accessToken: string; userId: string; username: string };
 
 @Injectable()
@@ -20,7 +20,12 @@ export class AuthService {
     return {
       userId: user.userId,
       username: user.username,
-      accessToken: await this.generateToken(user.userId, user.username),
+      accessToken: await this.generateToken(
+        user.userId,
+        user.username,
+        user.userTypeId,
+        user.userType,
+      ),
     };
   }
 
@@ -39,18 +44,23 @@ export class AuthService {
     return {
       username: user.username,
       userId: user.userId,
+      userTypeId: user.userType.userTypeId,
+      userType: user.userType.userType,
     };
   }
 
   private async generateToken(
     userId: string,
     username: string,
+    userTypeId: string,
+    userType: string,
   ): Promise<string> {
     const tokenPayload = {
       sub: userId,
       username: username,
+      userTypeId: userTypeId,
+      userType: userType,
     };
-
     return await this.jwtService.signAsync(tokenPayload);
   }
 }
