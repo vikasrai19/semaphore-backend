@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { User } from '../../users/user.entity';
 import { EventRules } from './event-rules.entity';
 
@@ -28,4 +35,12 @@ export class Events {
   noOfRounds: number;
   @OneToMany(() => EventRules, (event) => event.event)
   eventRules: EventRules[];
+  @Column()
+  title: string;
+  @Column({ unique: true })
+  orderNo: number;
+  @Column()
+  description: string;
+  @Column()
+  currentRound: number;
 }
