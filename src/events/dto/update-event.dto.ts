@@ -7,4 +7,6 @@ export class UpdateEventDto {
   eventHead2Id: string;
   memberCount: number;
   noOfRounds: number;
+  title: string;
+  modelName: string;
 }

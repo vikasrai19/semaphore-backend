@@ -6,4 +6,6 @@ export class CreateEventDto {
   eventLogoUrl: string;
   memberCount: number;
   noOfRounds: number;
+  title: string;
+  orderNo: number;
 }
