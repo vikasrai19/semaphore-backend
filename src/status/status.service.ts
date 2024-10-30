@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Status } from './status.entity';
+import { v4 as uuid4 } from 'uuid';
 
 @Injectable()
 export class StatusService {
@@ -15,8 +16,17 @@ export class StatusService {
   }
 
   async createStatus(statusData: { status: string }): Promise<Status> {
-    const status = this.statusRepository.create(statusData);
-    return await this.statusRepository.save(status);
+    const statusResponse = await this.statusRepository.findOneBy({
+      status: statusData.status,
+    });
+    if (statusResponse !== null && statusResponse !== undefined) {
+      throw new BadRequestException('Status data is already present');
+    }
+    const newStatus = this.statusRepository.create({
+      ...statusData,
+      statusId: uuid4(),
+    });
+    return await this.statusRepository.save(newStatus);
   }
 
   async findStatusById(statusId: string): Promise<Status | null> {
@@ -31,7 +41,9 @@ export class StatusService {
     statusId: string;
     status: string;
   }): Promise<string> {
-    const status = await this.statusRepository.findOneBy({ statusId: statusData.statusId });
+    const status = await this.statusRepository.findOneBy({
+      statusId: statusData.statusId,
+    });
     if (status == null) {
       throw new BadRequestException('Status data is not found');
     }
