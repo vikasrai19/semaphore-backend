@@ -61,4 +61,13 @@ export class UsersService {
     });
     return await this.userRepository.save(newUser);
   }
+
+  async getUserList(): Promise<User[]> {
+    return await this.userRepository.find({
+      order: {
+        fullName: 'ASC',
+      },
+      relations: ['userType'], // Include the userType relation
+    });
+  }
 }
