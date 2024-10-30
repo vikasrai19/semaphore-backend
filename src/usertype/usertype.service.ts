@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserType } from './usertype.entity';
+import { v4 as uuid4 } from 'uuid';
 
 @Injectable()
 export class UsertypeService {
@@ -25,7 +26,10 @@ export class UsertypeService {
       throw new BadRequestException('User type order no already exists');
     }
 
-    const userType = this.userTypeRepository.create(userTypeData);
+    const userType = this.userTypeRepository.create({
+      ...userTypeData,
+      userTypeId: uuid4(),
+    });
     return this.userTypeRepository.save(userType);
   }
 
@@ -56,7 +60,7 @@ export class UsertypeService {
   }
 
   private async userTypeValueExists(userType: string): Promise<boolean> {
-    const userTypeResponse = this.userTypeRepository
+    const userTypeResponse = await this.userTypeRepository
       .createQueryBuilder('UserTypes')
       .where('UserTypes.userType = :userType', { userType })
       .getOne();
@@ -65,7 +69,7 @@ export class UsertypeService {
   }
 
   private async userTypeOrderNoExists(orderNo: number): Promise<boolean> {
-    const userTypeResponse = this.userTypeRepository
+    const userTypeResponse = await this.userTypeRepository
       .createQueryBuilder('UserTypes')
       .where('UserTypes.orderNo = :orderNo', { orderNo })
       .getOne();
