@@ -8,6 +8,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { UsersService } from '../users/users.service';
 import { CreateEventRulesDto } from './dto/create-event-rules.dto';
 import { EventRules } from './entities/event-rules.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class EventsService {
@@ -27,9 +28,26 @@ export class EventsService {
       throw new BadRequestException('Event already exists');
     }
 
+    const staffCoordinator: User = await this.userService.findUserById(
+      eventData.staffCoordinatorId,
+    );
+    const eventHead1: User = await this.userService.findUserById(
+      eventData.eventHead1Id,
+    );
+    const eventHead2: User = await this.userService.findUserById(
+      eventData.eventHead2Id,
+    );
     event = this.eventRepository.create({
-      ...eventData,
       eventId: uuid4(),
+      eventName: eventData.eventName,
+      staffCoordinator,
+      eventHead1,
+      eventHead2,
+      eventLogoUrl: eventData.eventLogoUrl,
+      memberCount: eventData.memberCount,
+      noOfRounds: eventData.noOfRounds,
+      orderNo: eventData.orderNo,
+      title: eventData.title,
     });
 
     return await this.eventRepository.save(event);
