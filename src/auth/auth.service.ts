@@ -5,7 +5,12 @@ import { BcryptUtil } from '../utils/bcrypt.util';
 import { JwtService } from '@nestjs/jwt';
 
 type AuthInput = { email: string; password: string };
-type SignInData = { userId: string; username: string; userTypeId: string, userType: string };
+type SignInData = {
+  userId: string;
+  username: string;
+  userTypeId: string;
+  userType: string;
+};
 type AuthResult = { accessToken: string; userId: string; username: string };
 
 @Injectable()
@@ -15,6 +20,7 @@ export class AuthService {
     private readonly bcrypt: BcryptUtil,
     private jwtService: JwtService,
   ) {}
+
   async authenticateUser(input: AuthInput): Promise<AuthResult | null> {
     const user: SignInData = await this.validateUser(input);
     return {

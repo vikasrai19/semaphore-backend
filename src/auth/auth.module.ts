@@ -1,22 +1,13 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
-import { BcryptUtil } from '../utils/bcrypt.util';
-import { JwtModule } from '@nestjs/jwt';
-import { JWT_SECRET } from '../configs/jwt-secret';
-import { SuperUserAuthGuard } from './guards/auth.guard';
-import { UsersModule } from '../users/users.module';
+import { AuthService } from './auth.service';
+import { UsersModule } from 'src/users/users.module';
+import { BcryptUtil } from 'src/utils/bcrypt.util';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
-  providers: [AuthService, BcryptUtil, SuperUserAuthGuard],
+  imports: [UsersModule],
   controllers: [AuthController],
-  imports: [
-    JwtModule.register({
-      global: true,
-      secret: JWT_SECRET,
-    }),
-    forwardRef(() => UsersModule),
-  ],
-  exports: [SuperUserAuthGuard],
+  providers: [AuthService, BcryptUtil, JwtService],
 })
 export class AuthModule {}

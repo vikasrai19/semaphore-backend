@@ -7,17 +7,22 @@ import { UsertypeModule } from './usertype/usertype.module';
 import { StatusModule } from './status/status.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { datasourceOptions } from '../db/data-source';
-import { BcryptUtil } from './utils/bcrypt.util';
 import { EventsModule } from './events/events.module';
+import { EmailModule } from './email/email.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(datasourceOptions),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     UsersModule,
     AuthModule,
     UsertypeModule,
     StatusModule,
     EventsModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
