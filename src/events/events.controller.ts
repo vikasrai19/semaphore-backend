@@ -1,10 +1,19 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { Events } from './entities/event.entity';
 import { EventsService } from './events.service';
 import { SuperUserAuthGuard } from '../auth/guards/auth.guard';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { CreateEventRulesDto } from './dto/create-event-rules.dto';
+import { MultipleEventDto } from './dto/mutliple-event-dto';
 
 @Controller('web/api/events')
 export class EventsController {
@@ -22,7 +31,7 @@ export class EventsController {
   }
 
   @Get('/v1/FindById')
-  async findById(@Param('eventId') eventId: string): Promise<Events> {
+  async findById(@Query('eventId') eventId: string): Promise<Events> {
     return await this.eventsService.findEventById(eventId);
   }
 
@@ -41,7 +50,14 @@ export class EventsController {
   }
 
   @Get('/v1/FindEventRules')
-  async getEventRules(@Param('eventId') eventId: string): Promise<Events> {
+  async getEventRules(@Query('eventId') eventId: string): Promise<Events> {
     return await this.eventsService.getEventRules(eventId);
+  }
+
+  @Post('/v1/AddMultipleEvents')
+  async addMultipleEvents(
+    @Body() multipleEventsDto: MultipleEventDto[],
+  ): Promise<string> {
+    return await this.eventsService.addMultipleEvents(multipleEventsDto);
   }
 }

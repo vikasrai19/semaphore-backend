@@ -8,7 +8,8 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { UsersService } from '../users/users.service';
 import { CreateEventRulesDto } from './dto/create-event-rules.dto';
 import { EventRules } from './entities/event-rules.entity';
-import { User } from '../users/user.entity';
+import { MultipleEventDto } from './dto/mutliple-event-dto';
+import { EventHeads } from './entities/event-heads.entity';
 
 @Injectable()
 export class EventsService {
@@ -17,6 +18,8 @@ export class EventsService {
     private readonly eventRepository: Repository<Events>,
     @InjectRepository(EventRules)
     private readonly eventRulesRepository: Repository<EventRules>,
+    @InjectRepository(EventHeads)
+    private readonly eventHeadRepository: Repository<EventHeads>,
     private readonly userService: UsersService,
   ) {}
 
@@ -28,21 +31,15 @@ export class EventsService {
       throw new BadRequestException('Event already exists');
     }
 
-    const staffCoordinator: User = await this.userService.findUserById(
-      eventData.staffCoordinatorId,
-    );
-    const eventHead1: User = await this.userService.findUserById(
+    const eventHead1 = await this.userService.findUserById(
       eventData.eventHead1Id,
     );
-    const eventHead2: User = await this.userService.findUserById(
+    const eventHead2 = await this.userService.findUserById(
       eventData.eventHead2Id,
     );
     event = this.eventRepository.create({
       eventId: uuid4(),
       eventName: eventData.eventName,
-      staffCoordinator,
-      eventHead1,
-      eventHead2,
       eventLogoUrl: eventData.eventLogoUrl,
       memberCount: eventData.memberCount,
       noOfRounds: eventData.noOfRounds,
@@ -50,11 +47,27 @@ export class EventsService {
       title: eventData.title,
     });
 
-    return await this.eventRepository.save(event);
+    const savedEvent = await this.eventRepository.save(event);
+    const eventHead1Detail = this.eventHeadRepository.create({
+      eventHeadId: uuid4(),
+      user: eventHead1,
+      event: savedEvent,
+    });
+    const eventHead2Detail = this.eventHeadRepository.create({
+      eventHeadId: uuid4(),
+      user: eventHead2,
+      event: savedEvent,
+    });
+    await this.eventHeadRepository.save(eventHead1Detail);
+    await this.eventHeadRepository.save(eventHead2Detail);
+    return savedEvent;
   }
 
   async findAllEvents(): Promise<Events[]> {
-    return await this.eventRepository.find();
+    return await this.eventRepository.find({
+      relations: ['eventHeads.user'],
+      order: { ['orderNo']: 'ASC' },
+    });
   }
 
   async findEventById(eventId: string): Promise<Events> {
@@ -75,15 +88,6 @@ export class EventsService {
       throw new BadRequestException('Event doesnot exists');
     }
     event.eventName = eventData.eventName;
-    event.staffCoordinator = await this.userService.findUserById(
-      eventData.staffCoordinatorId,
-    );
-    event.eventHead1 = await this.userService.findUserById(
-      eventData.eventHead1Id,
-    );
-    event.eventHead2 = await this.userService.findUserById(
-      eventData.eventHead2Id,
-    );
     event.memberCount = eventData.memberCount;
     event.noOfRounds = eventData.noOfRounds;
     return await this.eventRepository.save(event);
@@ -123,9 +127,84 @@ export class EventsService {
   }
 
   async getEventRules(eventId: string): Promise<Events> {
-    return await this.eventRepository.findOne({
-      where: { eventId },
-      relations: ['EventRules'],
+    const event = await this.eventRepository.findOne({
+      where: { eventId: eventId },
+      relations: ['eventRules', 'eventHeads.user'],
     });
+
+    if (event && event.eventRules) {
+      event.eventRules.sort((a, b) => a.ruleNo - b.ruleNo);
+    }
+    return event;
+  }
+
+  async addMultipleEvents(eventDataList: MultipleEventDto[]): Promise<string> {
+    eventDataList.map(async (ele) => {
+      const event = await this.eventRepository.findOne({
+        where: { eventName: ele.eventName },
+      });
+      if (event != null) {
+        throw new BadRequestException('Event already exists');
+      }
+      const eventData = this.eventRepository.create({
+        eventId: uuid4(),
+        eventName: ele.eventName,
+        eventLogoUrl: ele.eventLogoUrl,
+        memberCount: ele.memberCount,
+        noOfRounds: ele.noOfRounds,
+        orderNo: ele.orderNo,
+        title: ele.title,
+        description: ele.description,
+        currentRound: ele.currentRound,
+      });
+
+      const newEvent = await this.eventRepository.save(eventData);
+      const eventHead1 = await this.userService.findUserByPhoneNumber(
+        ele.eventHead1PhoneNumber,
+      );
+      const eventHead2 = await this.userService.findUserByPhoneNumber(
+        ele.eventHead2PhoneNumber,
+      );
+      const eventHead1Detail = this.eventHeadRepository.create({
+        eventHeadId: uuid4(),
+        user: eventHead1,
+        event: newEvent,
+      });
+      const eventHead2Detail = this.eventHeadRepository.create({
+        eventHeadId: uuid4(),
+        user: eventHead2,
+        event: newEvent,
+      });
+      await this.eventHeadRepository.save(eventHead1Detail);
+      await this.eventHeadRepository.save(eventHead2Detail);
+
+      ele.eventRules.map(async (el) => {
+        if (newEvent === undefined || newEvent === null) {
+          throw new BadRequestException('Event doesnot exists');
+        }
+        let eventRule = await this.eventRulesRepository.findOne({
+          where: { event: newEvent, ruleNo: el.ruleNo },
+        });
+        if (eventRule != null) {
+          throw new BadRequestException('Event Rule No already exists');
+        }
+
+        eventRule = await this.eventRulesRepository.findOne({
+          where: { event: newEvent, eventRule: el.eventRule },
+        });
+        if (eventRule != null) {
+          //          throw new BadRequestException('Event Rule already exists');
+          console.log('skipping .. event rule already present');
+        }
+
+        eventRule = this.eventRulesRepository.create({
+          ...el,
+          eventRulesId: uuid4(),
+          event: newEvent,
+        });
+        await this.eventRulesRepository.save(eventRule);
+      });
+    });
+    return 'Successfully uploaded';
   }
 }

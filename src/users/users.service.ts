@@ -28,6 +28,10 @@ export class UsersService {
     });
   }
 
+  async findUserByPhoneNumber(phoneNumber: string): Promise<User> {
+    return await this.userRepository.findOneBy({ phoneNumber });
+  }
+
   async findUserById(userId: string): Promise<User> {
     return await this.userRepository.findOne({
       where: { userId },
@@ -51,13 +55,13 @@ export class UsersService {
     if (user != null) {
       throw new BadRequestException('User already exists');
     }
-    const userType = this.userTypeService.findById(userData.userTypeId);
+    const userType = await this.userTypeService.findById(userData.userTypeId);
     const hashedPassword = await this.bcrypt.hashPassword(userData.password);
     const newUser = this.userRepository.create({
       ...userData,
       userId: uuid4(),
       password: hashedPassword,
-      userType: await userType,
+      userType: userType,
     });
     return await this.userRepository.save(newUser);
   }

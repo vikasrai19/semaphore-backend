@@ -61,6 +61,7 @@ export class AuthService {
     userTypeId: string,
     userType: string,
   ): Promise<string> {
+    console.log('generating token');
     const tokenPayload = {
       sub: userId,
       username: username,

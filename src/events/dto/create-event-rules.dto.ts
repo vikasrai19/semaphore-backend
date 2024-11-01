@@ -3,7 +3,7 @@ export class CreateEventRulesDto {
   eventRules: EventRulesDto[];
 }
 
-class EventRulesDto {
+export class EventRulesDto {
   eventRule: string;
   ruleNo: number;
 }

@@ -1,5 +1,14 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 import { UserType } from '../usertype/usertype.entity';
+import { Events } from 'src/events/entities/event.entity';
+import { EventHeads } from '../events/entities/event-heads.entity';
 
 @Entity('Users')
 export class User {
@@ -18,4 +27,8 @@ export class User {
   userType: UserType;
   @Column({ default: false })
   isEmailValid: boolean;
+  @Column({ length: 15 })
+  phoneNumber: string;
+  @OneToMany(() => EventHeads, (eventHead) => eventHead.user)
+  event: Events;
 }

@@ -1,13 +1,6 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToMany,
-  OneToOne,
-  PrimaryColumn,
-} from 'typeorm';
-import { User } from '../../users/user.entity';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { EventRules } from './event-rules.entity';
+import { EventHeads } from './event-heads.entity';
 
 @Entity('Events')
 export class Events {
@@ -15,18 +8,6 @@ export class Events {
   eventId: string;
   @Column({ unique: true })
   eventName: string;
-  @JoinColumn({ name: 'staffCoordinatorId' })
-  @OneToOne(() => User)
-  staffCoordinator: User;
-  @JoinColumn({ name: 'eventHead1Id' })
-  @OneToOne(() => User)
-  eventHead1: User;
-  @JoinColumn({ name: 'eventHead2Id' })
-  @OneToOne(() => User)
-  eventHead2: User;
-  @JoinColumn({ name: 'juniorHeadId' })
-  @OneToOne(() => User)
-  juniorHead: User;
   @Column()
   eventLogoUrl: string;
   @Column({ nullable: false })
@@ -43,4 +24,6 @@ export class Events {
   description: string;
   @Column()
   currentRound: number;
+  @OneToMany(() => EventHeads, (eventHead) => eventHead.event)
+  eventHeads: EventHeads[];
 }
