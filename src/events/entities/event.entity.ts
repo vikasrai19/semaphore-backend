@@ -26,4 +26,6 @@ export class Events {
   currentRound: number;
   @OneToMany(() => EventHeads, (eventHead) => eventHead.event)
   eventHeads: EventHeads[];
+  @Column({ nullable: true })
+  modelName: string;
 }

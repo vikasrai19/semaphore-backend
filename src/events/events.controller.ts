@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { Events } from './entities/event.entity';
 import { EventsService } from './events.service';
@@ -59,5 +51,10 @@ export class EventsController {
     @Body() multipleEventsDto: MultipleEventDto[],
   ): Promise<string> {
     return await this.eventsService.addMultipleEvents(multipleEventsDto);
+  }
+
+  @Get('/v1/GetEventsForRegistration')
+  async getEventsForRegistration(): Promise<Events[]> {
+    return await this.eventsService.getEventDetailsForRegistration();
   }
 }

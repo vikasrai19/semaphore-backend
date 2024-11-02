@@ -11,5 +11,6 @@ export class MultipleEventDto {
   orderNo: number;
   description: string;
   currentRound: number;
+  modelName: string;
   eventRules: EventRulesDto[];
 }

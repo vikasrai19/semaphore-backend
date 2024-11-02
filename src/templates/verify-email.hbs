@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+</head>
+<body>
+    <h1>Hello {{userFirstName}},</h1>
+    <p>Thank you for registering for <strong>{{eventName}}</strong> at <strong>{{collegeName}}</strong>!</p>
+    <p>Please confirm your email address by clicking the link below:</p>
+    <p><a href="{{verificationLink}}">Verify Email Address</a></p>
+    <p>If you did not register for this event, please ignore this email.</p>
+    <h4>Event Details:</h4>
+    <p>📅 Event Date: {{eventDate}}</p>
+    <p>📍 Location: {{venue}}</p>
+    <p>⏰ Time: {{startTime}} to {{endTime}}</p>
+</body>
+</html>

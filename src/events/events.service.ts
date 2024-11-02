@@ -73,6 +73,7 @@ export class EventsService {
   async findEventById(eventId: string): Promise<Events> {
     const event = await this.eventRepository.findOne({
       where: { eventId: eventId },
+      relations: ['eventHeads.user', 'eventRules'],
     });
     if (event === undefined || event === null) {
       throw new BadRequestException('Event doesnot exists');
@@ -156,6 +157,7 @@ export class EventsService {
         title: ele.title,
         description: ele.description,
         currentRound: ele.currentRound,
+        modelName: ele.modelName,
       });
 
       const newEvent = await this.eventRepository.save(eventData);
@@ -206,5 +208,12 @@ export class EventsService {
       });
     });
     return 'Successfully uploaded';
+  }
+
+  async getEventDetailsForRegistration(): Promise<Events[]> {
+    return await this.eventRepository.find({
+      select: ['eventName', 'eventId', 'noOfRounds', 'memberCount'],
+      order: { ['orderNo']: 'ASC' },
+    });
   }
 }

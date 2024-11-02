@@ -10,6 +10,7 @@ import { datasourceOptions } from '../db/data-source';
 import { EventsModule } from './events/events.module';
 import { EmailModule } from './email/email.module';
 import { ConfigModule } from '@nestjs/config';
+import { RegistrationModule } from './registration/registration.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ConfigModule } from '@nestjs/config';
     StatusModule,
     EventsModule,
     EmailModule,
+    RegistrationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

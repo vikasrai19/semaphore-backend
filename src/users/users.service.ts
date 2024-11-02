@@ -74,4 +74,44 @@ export class UsersService {
       relations: ['userType'], // Include the userType relation
     });
   }
+
+  async registerUserForEvent(
+    fullName: string,
+    email: string,
+    phoneNumber: string,
+    userType: UserType,
+    password: string,
+  ): Promise<User> {
+    const username = email.split('@')[0];
+    const hashedPassword = await this.bcrypt.hashPassword(password);
+    const newUser = this.userRepository.create({
+      userId: uuid4(),
+      fullName,
+      email,
+      phoneNumber,
+      userType,
+      username,
+      isEmailValid: false,
+      password: hashedPassword,
+    });
+
+    return await this.userRepository.save(newUser);
+  }
+
+  async verifyUserEmail(userId: string): Promise<string> {
+    const user = await this.userRepository.findOne({
+      where: { userId },
+    });
+    if (user === null) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.isEmailValid === true) {
+      return 'User is already verified';
+    }
+
+    user.isEmailValid = true;
+    await this.userRepository.save(user);
+    return 'Email verified successfully';
+  }
 }

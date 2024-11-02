@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { SuperUserAuthGuard } from '../auth/guards/auth.guard';
@@ -25,10 +25,15 @@ export class UsersController {
 
   @Get('/v1/test-email')
   async testEmail() {
-    return await this.emailService.sendEmail(
+    return await this.emailService.sendEmailVerificationMail(
       'nnm23mc174@nmamit.in',
-      'Test Email',
-      'This is a test email',
+      'Vikas Rai',
+      'vikasrai19',
     );
+  }
+
+  @Get('/v1/VerifyEmailUser')
+  async verifyEmailUser(@Param('userId') userId: string): Promise<string> {
+    return await this.usersService.verifyUserEmail(userId);
   }
 }

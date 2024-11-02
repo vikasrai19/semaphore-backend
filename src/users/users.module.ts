@@ -7,7 +7,7 @@ import { UsersController } from './users.controller';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { EmailService } from 'src/email/email.service';
-import { JWT_SECRET } from 'src/configs/jwt-secret';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   providers: [UsersService, BcryptUtil, EmailService],
@@ -15,8 +15,9 @@ import { JWT_SECRET } from 'src/configs/jwt-secret';
   imports: [
     UsertypeModule,
     JwtModule.registerAsync({
-      useFactory: async () => ({
-        secret: JWT_SECRET,
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '2000000s' },
       }),
     }),

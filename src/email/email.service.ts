@@ -8,10 +8,7 @@ export class EmailService {
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.google.com',
-      // host: this.configService.get<string>('SMTP_HOST'),
-      port: this.configService.get<number>('SMTP_PORT'),
-      secure: false,
+      service: 'gmail',
       auth: {
         user: this.configService.get<string>('GMAIL_USER'),
         pass: this.configService.get<string>('GMAIL_PASS'),
@@ -28,7 +25,6 @@ export class EmailService {
     text: string,
     html?: string,
   ): Promise<void> {
-    console.log('Sending email... please wait');
     const mailOptions = {
       from: this.configService.get<string>('GMAIL_USER'),
       to,
@@ -39,7 +35,32 @@ export class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log('Email sent successfully');
+    } catch (error) {
+      console.error('Error sending email :', error);
+      throw error;
+    }
+  }
+
+  async sendEmailVerificationMail(
+    toEmailId: string,
+    fullName: string,
+    userId: string,
+  ): Promise<void> {
+    const subject: string =
+      '🔐 Please Verify Your Email for Semaphore 2K24 Registration';
+    const verificationLink: string = `${this.configService.get<string>('EMAIL_VERIFY_HOST')}/verify-email?userId=${userId}`;
+    const htmlContent: string = `<h1>Hello ${fullName},</h1> <p>Thank you for showing interest in <strong>Semaphore 2K24</strong> at <strong>NMAMIT, Nitte</strong>!</p> <p>Please confirm your email address by clicking the link below:</p><p><a href="${verificationLink}">Verify Email Address</a></p><p>If you did not register for this event, please ignore this email.</p><h4>Event Details:</h4><p>📅 Event Date: 20th & 21st Nov, 2024</p><p>📍 Location: NMAMIT Campus, Nitte, Karkala</p><p>⏰ Time: 9.00 AM IST to 6.00 PM IST</p>`;
+
+    const mailOptions = {
+      from: this.configService.get<string>('GMAIL_USER'),
+      to: toEmailId,
+      subject,
+      text: `Thank you for registering! Please verify your email by clicking the link below:`,
+      html: htmlContent,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
     } catch (error) {
       console.error('Error sending email :', error);
       throw error;

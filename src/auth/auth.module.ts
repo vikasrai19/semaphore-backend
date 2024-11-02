@@ -4,13 +4,14 @@ import { AuthService } from './auth.service';
 import { UsersModule } from 'src/users/users.module';
 import { BcryptUtil } from 'src/utils/bcrypt.util';
 import { JwtModule } from '@nestjs/jwt';
-import { JWT_SECRET } from '../configs/jwt-secret';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     JwtModule.registerAsync({
-      useFactory: async () => ({
-        secret: JWT_SECRET,
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '2000000s' },
       }),
     }),
