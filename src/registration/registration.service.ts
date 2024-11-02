@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { College } from './entities/college.entity';
 import { StatusService } from '../status/status.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class RegistrationService {
@@ -15,6 +16,7 @@ export class RegistrationService {
     private userService: UsersService,
     private userTypeService: UsertypeService,
     private statusService: StatusService,
+    private emailService: EmailService,
     @InjectRepository(Registration)
     private readonly registrationRepo: Repository<Registration>,
     @InjectRepository(College)
@@ -67,6 +69,11 @@ export class RegistrationService {
       status: pendingStatus,
     });
     await this.registrationRepo.save(newRegistrationData);
+    await this.emailService.sendEmailVerificationMail(
+      newUser.email,
+      newUser.fullName,
+      newUser.userId,
+    );
     return 'Account Created Successfully .. Please verify your email id';
   }
 }

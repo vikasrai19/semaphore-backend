@@ -7,9 +7,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Registration } from './entities/registration.entity';
 import { College } from './entities/college.entity';
 import { StatusModule } from '../status/status.module';
+import { EmailService } from '../email/email.service';
 
 @Module({
-  providers: [RegistrationService],
+  providers: [RegistrationService, EmailService],
   controllers: [RegistrationController],
   imports: [
     TypeOrmModule.forFeature([Registration, College]),
