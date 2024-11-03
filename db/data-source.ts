@@ -9,10 +9,11 @@ config();
 const configService = new ConfigService();
 export const datasourceOptions: DataSourceOptions = {
   type: 'mysql',
-  host: configService.get<string>('DB_HOST'),
-  username: configService.get<string>('DB_USER'),
-  password: configService.get<string>('DB_PASSWORD'),
-  database: configService.get<string>('DB_NAME'),
+  host: process.env.DB_HOST,
+  // port: parseInt(process.env.DB_PORT, 10),
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   entities: [EventMembers, EventTeams, 'dist/**/*.entity.js'],
   migrations: ['dist/db/migrations/*.js'],
 };
