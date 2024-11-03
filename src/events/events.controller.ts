@@ -46,6 +46,7 @@ export class EventsController {
     return await this.eventsService.getEventRules(eventId);
   }
 
+  @UseGuards(SuperUserAuthGuard)
   @Post('/v1/AddMultipleEvents')
   async addMultipleEvents(
     @Body() multipleEventsDto: MultipleEventDto[],

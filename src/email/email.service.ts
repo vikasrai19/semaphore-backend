@@ -49,8 +49,30 @@ export class EmailService {
     const subject: string =
       '🔐 Please Verify Your Email for Semaphore 2K24 Registration';
     const verificationLink: string = `${this.configService.get<string>('EMAIL_VERIFY_HOST')}/verify-email?userId=${userId}`;
-    const htmlContent: string = `<h1>Hello ${fullName},</h1> <p>Thank you for showing interest in <strong>Semaphore 2K24</strong> at <strong>NMAMIT, Nitte</strong>!</p> <p>Please confirm your email address by clicking the link below:</p><p><a href="${verificationLink}">Verify Email Address</a></p><p>If you did not register for this event, please ignore this email.</p><h4>Event Details:</h4><p>📅 Event Date: 20th & 21st Nov, 2024</p><p>📍 Location: NMAMIT Campus, Nitte, Karkala</p><p>⏰ Time: 9.00 AM IST to 6.00 PM IST</p>`;
+    const htmlContent: string = `<h1>Hello ${fullName},</h1> <p>Thank you for showing interest in <strong>Semaphore 2K24</strong> at <strong>NMAMIT, Nitte</strong>!</p> <p>Please confirm your email address by clicking the link below:</p><p><a href="${verificationLink}">Verify Email Address</a></p><p>If you did not register for this event, please ignore this email.</p><h4>Event Details:</h4><p>📅 Event Date: 19th & 20th Nov, 2024</p><p>📍 Location: NMAMIT Campus, Nitte, Karkala</p><p>⏰ Time: 9.00 AM IST to 6.00 PM IST</p>`;
 
+    const mailOptions = {
+      from: this.configService.get<string>('GMAIL_USER'),
+      to: toEmailId,
+      subject,
+      text: `Thank you for registering! Please verify your email by clicking the link below:`,
+      html: htmlContent,
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Error sending email :', error);
+      throw error;
+    }
+  }
+
+  async sendPaymentAcceptedEmail(
+    toEmailId: string,
+    fullName: string,
+  ): Promise<void> {
+    const subject = `Your Registration for Semaphore 2K24 is Confirmed!`;
+    const htmlContent = `<h1>Hello ${fullName},</h1> <p>Congratulations! We have successfully received your payment for <strong>Semaphore 2K24</strong> at <strong>NMAMIT, Nitte</strong> and your application is now confirmed.</p><p>We’re thrilled to welcome you to this exciting event. <h4>Event Details:</h4><p>📅 <strong>Event Date:</strong> 19th & 20th Nov, 2024</p><p>📍 <strong>Location:</strong> NMAMIT Campus, Nitte, Karkala</p><p>⏰ <strong>Time:</strong> 9:00 AM IST to 6:00 PM IST</p><p>If you have any questions or require further assistance, feel free to reply to this email.</p><p>Thank you once again for registering, and we look forward to seeing you at <strong>Semaphore 2K24</strong>!</p><p>Warm regards,</p><p><strong>The Semaphore 2K24 Team</strong><br>NMAMIT, Nitte</p>`;
     const mailOptions = {
       from: this.configService.get<string>('GMAIL_USER'),
       to: toEmailId,

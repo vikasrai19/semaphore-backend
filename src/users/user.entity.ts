@@ -9,6 +9,7 @@ import {
 import { UserType } from '../usertype/usertype.entity';
 import { Events } from 'src/events/entities/event.entity';
 import { EventHeads } from '../events/entities/event-heads.entity';
+import { Notifications } from '../notifications/entities/notification.entity';
 
 @Entity('Users')
 export class User {
@@ -31,4 +32,6 @@ export class User {
   phoneNumber: string;
   @OneToMany(() => EventHeads, (eventHead) => eventHead.user)
   event: Events;
+  @OneToMany(() => Notifications, (notification) => notification.user)
+  notications: Notifications[];
 }

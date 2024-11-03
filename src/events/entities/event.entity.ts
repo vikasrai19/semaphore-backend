@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { EventRules } from './event-rules.entity';
 import { EventHeads } from './event-heads.entity';
+import { EventTeams } from 'src/main_event/entities/event-teams.entities';
 
 @Entity('Events')
 export class Events {
@@ -28,4 +29,6 @@ export class Events {
   eventHeads: EventHeads[];
   @Column({ nullable: true })
   modelName: string;
+  @OneToMany(() => EventTeams, (eventTeam) => eventTeam.event)
+  eventTeams: EventTeams[];
 }

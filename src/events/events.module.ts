@@ -15,5 +15,6 @@ import { EventHeads } from './entities/event-heads.entity';
     TypeOrmModule.forFeature([Events, EventRules, EventHeads]),
     UsersModule,
   ],
+  exports: [EventsService],
 })
 export class EventsModule {}

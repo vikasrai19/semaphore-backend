@@ -5,13 +5,24 @@ import { BcryptUtil } from '../utils/bcrypt.util';
 import { JwtService } from '@nestjs/jwt';
 
 type AuthInput = { email: string; password: string };
+type TokenData = {
+  sub: string;
+  username: string;
+  userTypeId: string;
+  userType: string;
+};
 type SignInData = {
   userId: string;
   username: string;
   userTypeId: string;
   userType: string;
 };
-type AuthResult = { accessToken: string; userId: string; username: string };
+type AuthResult = {
+  accessToken: string;
+  userId: string;
+  username: string;
+  userType: string;
+};
 
 @Injectable()
 export class AuthService {
@@ -26,6 +37,7 @@ export class AuthService {
     return {
       userId: user.userId,
       username: user.username,
+      userType: user.userType,
       accessToken: await this.generateToken(
         user.userId,
         user.username,
@@ -47,6 +59,9 @@ export class AuthService {
     if (!isMatch) {
       throw new BadRequestException('Please check your credentials');
     }
+    if (user.isEmailValid === false) {
+      throw new BadRequestException('Please verify your email');
+    }
     return {
       username: user.username,
       userId: user.userId,
@@ -61,7 +76,6 @@ export class AuthService {
     userTypeId: string,
     userType: string,
   ): Promise<string> {
-    console.log('generating token');
     const tokenPayload = {
       sub: userId,
       username: username,
@@ -69,5 +83,17 @@ export class AuthService {
       userType: userType,
     };
     return await this.jwtService.signAsync(tokenPayload);
+  }
+
+  async isUserAuthenticated(token: string): Promise<User> {
+    if (token === undefined || token === null) {
+      throw new BadRequestException('Cannot verify the user');
+    }
+    if (await this.jwtService.verifyAsync(token)) {
+      const jwtTokenData: TokenData = await this.jwtService.decode(token);
+      return await this.userService.findUserByUserName(jwtTokenData.username);
+    } else {
+      throw new BadRequestException('Cannot verify the user');
+    }
   }
 }

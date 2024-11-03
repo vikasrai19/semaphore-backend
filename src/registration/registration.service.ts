@@ -76,4 +76,62 @@ export class RegistrationService {
     );
     return 'Account Created Successfully .. Please verify your email id';
   }
+
+  async addCollege(collegeName: string): Promise<College> {
+    const collegeData = await this.collegeRepo.findOne({
+      where: { collegeName },
+    });
+
+    if (collegeData !== null) {
+      throw new BadRequestException('College is already added');
+    }
+
+    const newCollege = this.collegeRepo.create({
+      collegeId: uuid4(),
+      collegeName,
+      collegeLocation: '',
+    });
+    return await this.collegeRepo.save(newCollege);
+  }
+
+  async getCollegeList(): Promise<College[]> {
+    return await this.collegeRepo.find({
+      order: { ['collegeName']: 'ASC' },
+    });
+  }
+
+  async findRegistrationByUserId(userId: string): Promise<Registration> {
+    const registration = await this.registrationRepo.findOne({
+      where: { user: { userId } },
+      relations: ['user'],
+    });
+
+    return registration;
+  }
+
+  async getRegistrationData(userId: string): Promise<Registration> {
+    return await this.registrationRepo
+      .createQueryBuilder('registration')
+      .leftJoinAndSelect('registration.college', 'college')
+      .leftJoinAndSelect('registration.user', 'user')
+      .leftJoinAndSelect('registration.status', 'status')
+      .leftJoinAndSelect('registration.eventTeams', 'eventTeams')
+      .leftJoinAndSelect('eventTeams.event', 'event')
+      .leftJoinAndSelect('eventTeams.eventMembers', 'eventMembers')
+      .where('user.userId = :userId', { userId })
+      .orderBy('event.orderNo', 'ASC')
+      .getOne();
+  }
+
+  async acceptRegistration(userId: string): Promise<string> {
+    const registration = await this.registrationRepo.findOne({
+      where: { user: { userId } },
+    });
+    if (registration === null) {
+      throw new BadRequestException('Registration not found');
+    }
+    registration.status = await this.statusService.findStatusByName('Accepted');
+    await this.registrationRepo.save(registration);
+    return 'Registration Accepted';
+  }
 }

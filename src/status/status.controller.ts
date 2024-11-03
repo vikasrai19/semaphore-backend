@@ -30,7 +30,9 @@ export class StatusController {
 
   @UseGuards(SuperUserAuthGuard)
   @Post('/v1/Update')
-  async updateStatus(@Body() statusData: { statusId: string, status: string}): Promise<string> {
+  async updateStatus(
+    @Body() statusData: { statusId: string; status: string },
+  ): Promise<string> {
     return await this.statusService.updateStatus(statusData);
   }
 }

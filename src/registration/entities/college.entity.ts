@@ -7,7 +7,7 @@ export class College {
   collegeId: string;
   @Column({ unique: true })
   collegeName: string;
-  @Column({ unique: true })
+  @Column({ unique: false })
   collegeLocation: string;
   @OneToOne(() => Registration, (registration) => registration.college)
   @JoinColumn()

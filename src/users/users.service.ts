@@ -18,12 +18,22 @@ export class UsersService {
   ) {}
 
   async findUserByUserName(username: string): Promise<User> {
-    return await this.userRepository.findOneBy({ username });
+    return await this.userRepository.findOne({
+      where: { username },
+      relations: ['userType'],
+    });
   }
 
   async findUserByEmail(email: string): Promise<User> {
     return await this.userRepository.findOne({
       where: { email },
+      relations: ['userType'], // Include the userType relation
+    });
+  }
+
+  async findUserByUsername(username: string): Promise<User> {
+    return await this.userRepository.findOne({
+      where: { username },
       relations: ['userType'], // Include the userType relation
     });
   }

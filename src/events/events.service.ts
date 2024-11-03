@@ -196,7 +196,6 @@ export class EventsService {
         });
         if (eventRule != null) {
           //          throw new BadRequestException('Event Rule already exists');
-          console.log('skipping .. event rule already present');
         }
 
         eventRule = this.eventRulesRepository.create({
