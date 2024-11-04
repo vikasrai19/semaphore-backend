@@ -24,11 +24,13 @@ export class RegistrationService {
   ) {}
 
   async createRegistration(registrationData: RegistrationDto): Promise<string> {
+    console.log('registrationData ', registrationData);
     const user = await this.userService.findUserByEmail(registrationData.email);
-    const registrationUser = await this.registrationRepo.findOne({
-      where: { user },
-    });
-    if (registrationUser != null) {
+    // const registrationUser = await this.registrationRepo.findOne({
+    //   where: { user },
+    // });
+    // console.log("registration ", registrationUser);
+    if (user != null) {
       throw new BadRequestException('Registration already done by the user');
     }
     const collegeRegCount = await this.collegeRepo.count({
@@ -59,6 +61,7 @@ export class RegistrationService {
       user: newUser,
       college: college,
       status: pendingStatus,
+      teamName: '',
     });
     await this.registrationRepo.save(newRegistrationData);
     await this.emailService.sendEmailVerificationMail(
