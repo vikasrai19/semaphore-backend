@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryColumn,
@@ -24,7 +25,7 @@ export class Registration {
   college: College;
   @Column()
   teamName: string;
-  @OneToOne(() => Status)
+  @ManyToOne(() => Status)
   @JoinColumn()
   status: Status;
   @OneToMany(() => EventTeams, (eventTeam) => eventTeam.registration)
