@@ -31,13 +31,6 @@ export class RegistrationService {
     if (registrationUser != null) {
       throw new BadRequestException('Registration already done by the user');
     }
-
-    const teamNameCount = await this.registrationRepo.count({
-      where: { teamName: registrationData.teamName },
-    });
-    if (teamNameCount >= 1) {
-      throw new BadRequestException('Team Name already taken');
-    }
     const collegeRegCount = await this.collegeRepo.count({
       where: { collegeId: registrationData.collegeId },
     });
@@ -64,7 +57,6 @@ export class RegistrationService {
     const newRegistrationData = this.registrationRepo.create({
       registrationId: uuid4(),
       user: newUser,
-      teamName: registrationData.teamName,
       college: college,
       status: pendingStatus,
     });

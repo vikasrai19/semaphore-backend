@@ -14,7 +14,9 @@ export class UsertypeController {
 
   @UseGuards(SuperUserAuthGuard)
   @Post('/v1/Create')
-  async createUserType(@Body() userTypeData: { userType: string, orderNo: number }): Promise<UserType> {
+  async createUserType(
+    @Body() userTypeData: { userType: string; orderNo: number },
+  ): Promise<UserType> {
     return await this.usertypeService.createUserType(userTypeData);
   }
 
@@ -25,7 +27,14 @@ export class UsertypeController {
 
   @UseGuards(SuperUserAuthGuard)
   @Post('/v1/Update')
-  async updateUserType(@Body() userTypeData: { userTypeId: string, userType: string, orderNo: number}): Promise<string> {
+  async updateUserType(
+    @Body()
+    userTypeData: {
+      userTypeId: string;
+      userType: string;
+      orderNo: number;
+    },
+  ): Promise<string> {
     return await this.usertypeService.updateUserType(userTypeData);
   }
 

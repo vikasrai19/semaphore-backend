@@ -4,5 +4,4 @@ export class RegistrationDto {
   password: string;
   phoneNumber: string;
   collegeId: string;
-  teamName: string;
 }

@@ -86,13 +86,17 @@ export class AuthService {
   }
 
   async isUserAuthenticated(token: string): Promise<User> {
-    if (token === undefined || token === null) {
-      throw new BadRequestException('Cannot verify the user');
-    }
-    if (await this.jwtService.verifyAsync(token)) {
-      const jwtTokenData: TokenData = await this.jwtService.decode(token);
-      return await this.userService.findUserByUserName(jwtTokenData.username);
-    } else {
+    try {
+      if (token === undefined || token === null) {
+        throw new BadRequestException('Cannot verify the user');
+      }
+      if (await this.jwtService.verifyAsync(token)) {
+        const jwtTokenData: TokenData = await this.jwtService.decode(token);
+        return await this.userService.findUserByUserName(jwtTokenData.username);
+      } else {
+        throw new BadRequestException('Cannot verify the user');
+      }
+    } catch (e) {
       throw new BadRequestException('Cannot verify the user');
     }
   }
