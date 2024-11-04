@@ -27,4 +27,6 @@ export class PaymentDetails {
   @ManyToOne(() => Registration, (registration) => registration.paymentDetails)
   @JoinColumn()
   registration: Registration;
+  @Column()
+  remarks: string;
 }

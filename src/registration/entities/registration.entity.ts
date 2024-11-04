@@ -36,4 +36,6 @@ export class Registration {
     (paymentDetails) => paymentDetails.registration,
   )
   paymentDetails: PaymentDetails[];
+  @Column({ default: false })
+  isTeamReported: boolean;
 }
