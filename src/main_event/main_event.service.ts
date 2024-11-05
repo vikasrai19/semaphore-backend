@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventTeams } from './entities/event-teams.entities';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { RegistrationService } from 'src/registration/registration.service';
 import { EventRegistrationDto } from './dto/event-registration.dto';
 import { EventsService } from 'src/events/events.service';
@@ -34,13 +34,13 @@ export class MainEventService {
     const registration =
       await this.registrationService.findRegistrationByUserId(userId);
 
-    const teamData = await this.eventTeamRepo.findOne({
+    const teamDataCount = await this.eventTeamRepo.count({
       where: { registration },
     });
-    if (teamData === null) {
-      return false;
+    if (teamDataCount > 0) {
+      return true;
     }
-    return true;
+    return false;
   }
 
   async completeRegistration(
@@ -110,6 +110,7 @@ export class MainEventService {
       transactionId: paymentDetails.transactionId,
       status: status,
       registration: registration,
+      remarks: '',
     });
     await this.paymentRepo.save(paymentData);
     return 'Payment details accepted Successfully .. Please wait for confirmation';
@@ -131,12 +132,11 @@ export class MainEventService {
   async verifyTransaction(
     transactionId: string,
     userId: string,
-    statusId: string,
   ): Promise<string> {
     const paymentData = await this.paymentRepo.findOne({
       where: { paymentDetailsId: transactionId },
     });
-    const status = await this.statusService.findStatusById(statusId);
+    const status = await this.statusService.findStatusByName('Successful');
     paymentData.status = status;
     await this.paymentRepo.save(paymentData);
     await this.registrationService.acceptRegistration(userId);
@@ -147,5 +147,57 @@ export class MainEventService {
       registration.user.fullName,
     );
     return 'Payment verified successfully';
+  }
+
+  async rejectTransaction(
+    transactionId: string,
+    userId: string,
+    remarks: string,
+  ): Promise<string> {
+    const paymentData = await this.paymentRepo.findOne({
+      where: { paymentDetailsId: transactionId },
+      relations: ['status'],
+    });
+    const status = await this.statusService.findStatusByName('Rejected');
+    paymentData.status = status;
+    paymentData.remarks = remarks;
+    await this.paymentRepo.save(paymentData);
+    const registration =
+      await this.registrationService.findRegistrationByUserId(userId);
+    await this.emailService.sendPaymentRejectedEmail(
+      registration.user.email,
+      registration.user.fullName,
+      remarks,
+    );
+    return 'Payment rejected successfully';
+  }
+
+  async isPaymentPending(userId: string): Promise<boolean> {
+    const registration =
+      await this.registrationService.findRegistrationByUserId(userId);
+    const paymentCount = await this.paymentRepo.count({
+      where: {
+        status: { status: In(['Successful', 'Waiting for confirmation']) },
+        registration: registration,
+      },
+    });
+    if (paymentCount === 0) {
+      return true;
+    }
+
+    return false;
+  }
+
+  async getPendingPaymentListForSU(): Promise<PaymentDetails[]> {
+    const paymentDetails = await this.paymentRepo.find({
+      where: { status: { status: 'Waiting For Confirmation' } },
+      relations: [
+        'registration',
+        'registration.user',
+        'registration.college',
+        'status',
+      ],
+    });
+    return paymentDetails;
   }
 }

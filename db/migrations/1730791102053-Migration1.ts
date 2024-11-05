@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration11730742822252 implements MigrationInterface {
-    name = 'Migration11730742822252'
+export class Migration11730791102053 implements MigrationInterface {
+    name = 'Migration11730791102053'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE \`UserTypes\` (\`userTypeId\` varchar(255) NOT NULL, \`userType\` varchar(255) NOT NULL, \`orderNo\` int NOT NULL, PRIMARY KEY (\`userTypeId\`)) ENGINE=InnoDB`);
@@ -12,7 +12,7 @@ export class Migration11730742822252 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE \`Users\` (\`userId\` varchar(255) NOT NULL, \`username\` varchar(255) NOT NULL, \`fullName\` varchar(255) NOT NULL, \`email\` varchar(255) NOT NULL, \`password\` varchar(255) NOT NULL, \`isEmailValid\` tinyint NOT NULL DEFAULT 0, \`phoneNumber\` varchar(15) NOT NULL, \`userTypeId\` varchar(36) NULL, UNIQUE INDEX \`IDX_ffc81a3b97dcbf8e320d5106c0\` (\`username\`), UNIQUE INDEX \`IDX_3c3ab3f49a87e6ddb607f3c494\` (\`email\`), PRIMARY KEY (\`userId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`College\` (\`collegeId\` varchar(255) NOT NULL, \`collegeName\` varchar(255) NOT NULL, \`collegeLocation\` varchar(255) NOT NULL, \`registrationRegistrationId\` varchar(255) NULL, UNIQUE INDEX \`IDX_fbcd3efed89e4c9394d8a9b935\` (\`collegeName\`), UNIQUE INDEX \`REL_f27cc582b3cb80a2a658210820\` (\`registrationRegistrationId\`), PRIMARY KEY (\`collegeId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`Status\` (\`statusId\` varchar(255) NOT NULL, \`status\` varchar(255) NOT NULL, PRIMARY KEY (\`statusId\`)) ENGINE=InnoDB`);
-        await queryRunner.query(`CREATE TABLE \`PaymentDetails\` (\`paymentDetailsId\` varchar(255) NOT NULL, \`accountHolderName\` varchar(255) NOT NULL, \`phoneNumber\` varchar(255) NOT NULL, \`upiId\` varchar(255) NOT NULL, \`transactionId\` varchar(255) NOT NULL, \`remarks\` varchar(255) NOT NULL, \`statusStatusId\` varchar(36) NULL, \`registrationRegistrationId\` varchar(255) NULL, UNIQUE INDEX \`REL_d64810cc06ab349ee520dd58cb\` (\`statusStatusId\`), PRIMARY KEY (\`paymentDetailsId\`)) ENGINE=InnoDB`);
+        await queryRunner.query(`CREATE TABLE \`PaymentDetails\` (\`paymentDetailsId\` varchar(255) NOT NULL, \`accountHolderName\` varchar(255) NOT NULL, \`phoneNumber\` varchar(255) NOT NULL, \`upiId\` varchar(255) NOT NULL, \`transactionId\` varchar(255) NOT NULL, \`remarks\` varchar(255) NOT NULL, \`statusStatusId\` varchar(36) NULL, \`registrationRegistrationId\` varchar(255) NULL, PRIMARY KEY (\`paymentDetailsId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`Registration\` (\`registrationId\` varchar(255) NOT NULL, \`teamName\` varchar(255) NOT NULL, \`isPaid\` tinyint NOT NULL DEFAULT 0, \`isTeamReported\` tinyint NOT NULL DEFAULT 0, \`userUserId\` varchar(36) NULL, \`collegeCollegeId\` varchar(255) NULL, \`statusStatusId\` varchar(36) NULL, UNIQUE INDEX \`REL_21f9d3a7c95fb62167295cd5ae\` (\`userUserId\`), UNIQUE INDEX \`REL_28d6fd800398b22f7d36e2f3ed\` (\`collegeCollegeId\`), PRIMARY KEY (\`registrationId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`TeamScores\` (\`eventScoreId\` varchar(255) NOT NULL, \`roundNo\` int NOT NULL, \`score\` int NOT NULL, \`eventTeamEventTeamId\` varchar(255) NULL, PRIMARY KEY (\`eventScoreId\`)) ENGINE=InnoDB`);
         await queryRunner.query(`CREATE TABLE \`EventTeams\` (\`eventTeamId\` varchar(255) NOT NULL, \`currentRound\` int NOT NULL, \`registrationRegistrationId\` varchar(255) NULL, \`eventEventId\` varchar(36) NULL, PRIMARY KEY (\`eventTeamId\`)) ENGINE=InnoDB`);
@@ -56,7 +56,6 @@ export class Migration11730742822252 implements MigrationInterface {
         await queryRunner.query(`DROP INDEX \`REL_28d6fd800398b22f7d36e2f3ed\` ON \`Registration\``);
         await queryRunner.query(`DROP INDEX \`REL_21f9d3a7c95fb62167295cd5ae\` ON \`Registration\``);
         await queryRunner.query(`DROP TABLE \`Registration\``);
-        await queryRunner.query(`DROP INDEX \`REL_d64810cc06ab349ee520dd58cb\` ON \`PaymentDetails\``);
         await queryRunner.query(`DROP TABLE \`PaymentDetails\``);
         await queryRunner.query(`DROP TABLE \`Status\``);
         await queryRunner.query(`DROP INDEX \`REL_f27cc582b3cb80a2a658210820\` ON \`College\``);

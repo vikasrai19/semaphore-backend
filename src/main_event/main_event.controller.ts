@@ -55,7 +55,35 @@ export class MainEventController {
     return this.mainEventService.verifyTransaction(
       paymentData.paymentId,
       paymentData.userId,
-      paymentData.statusId,
     );
+  }
+
+  @UseGuards(SuperUserAuthGuard)
+  @Post('/v1/RejectTransaction')
+  async rejectTransaction(
+    @Body()
+    paymentData: {
+      paymentId: string;
+      userId: string;
+      remarks: string;
+    },
+  ): Promise<string> {
+    return this.mainEventService.rejectTransaction(
+      paymentData.paymentId,
+      paymentData.userId,
+      paymentData.remarks,
+    );
+  }
+
+  @UseGuards(ParticipantAuthGuard)
+  @Get('/v1/IsPaymentPending')
+  async isPaymentPending(@Query('userId') userId: string): Promise<boolean> {
+    return await this.mainEventService.isPaymentPending(userId);
+  }
+
+  @UseGuards(SuperUserAuthGuard)
+  @Get('/v1/GetPendingPaymentList')
+  async getPendingPaymentListForSU(): Promise<PaymentDetails[]> {
+    return await this.mainEventService.getPendingPaymentListForSU();
   }
 }
