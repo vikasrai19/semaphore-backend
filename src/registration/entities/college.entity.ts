@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm';
 import { Registration } from './registration.entity';
 
 @Entity('College')
@@ -9,7 +9,7 @@ export class College {
   collegeName: string;
   @Column({ unique: false })
   collegeLocation: string;
-  @OneToOne(() => Registration, (registration) => registration.college)
+  @OneToMany(() => Registration, (registration) => registration.college)
   @JoinColumn()
-  registration: Registration;
+  registration: Registration[];
 }

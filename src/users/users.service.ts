@@ -72,6 +72,7 @@ export class UsersService {
       userId: uuid4(),
       password: hashedPassword,
       userType: userType,
+      isEmailValid: true,
     });
     return await this.userRepository.save(newUser);
   }
@@ -79,6 +80,7 @@ export class UsersService {
   async getUserList(): Promise<User[]> {
     return await this.userRepository.find({
       order: {
+        userType: { orderNo: 'ASC' },
         fullName: 'ASC',
       },
       relations: ['userType'], // Include the userType relation

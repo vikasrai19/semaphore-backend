@@ -142,6 +142,7 @@ export class MainEventService {
     await this.registrationService.acceptRegistration(userId);
     const registration =
       await this.registrationService.findRegistrationByUserId(userId);
+    await this.registrationService.updateRegistrationForPayment(userId);
     await this.emailService.sendPaymentAcceptedEmail(
       registration.user.email,
       registration.user.fullName,

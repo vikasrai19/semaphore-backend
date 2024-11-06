@@ -12,7 +12,9 @@ export class UsertypeService {
   ) {}
 
   async findAll(): Promise<UserType[]> {
-    return await this.userTypeRepository.find();
+    return await this.userTypeRepository.find({
+      order: { ['orderNo']: 'ASC' },
+    });
   }
 
   async createUserType(userTypeData: {
@@ -25,9 +27,10 @@ export class UsertypeService {
     if (await this.userTypeOrderNoExists(userTypeData.orderNo)) {
       throw new BadRequestException('User type order no already exists');
     }
-
+    console.log(userTypeData);
     const userType = this.userTypeRepository.create({
-      ...userTypeData,
+      userType: userTypeData.userType,
+      orderNo: userTypeData.orderNo,
       userTypeId: uuid4(),
     });
     return this.userTypeRepository.save(userType);

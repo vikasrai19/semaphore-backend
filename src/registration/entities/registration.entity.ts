@@ -20,7 +20,7 @@ export class Registration {
   @OneToOne(() => User)
   @JoinColumn()
   user: User;
-  @OneToOne(() => College, (college) => college.registration)
+  @ManyToOne(() => College, (college) => college.registration)
   @JoinColumn()
   college: College;
   @Column()

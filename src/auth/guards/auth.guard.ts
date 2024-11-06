@@ -101,3 +101,35 @@ export class EventHeadAuthGuard implements CanActivate {
     throw new BadRequestException('Cannot verify the user');
   }
 }
+
+@Injectable()
+export class SuAndAdminGuard implements CanActivate {
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const authorization = request.headers.authorization;
+    if (authorization === null || authorization === undefined) {
+      throw new UnauthorizedException();
+    }
+    const tokenData = authorization.split(' ');
+    if (tokenData[0] != 'Bearer') {
+      throw new UnauthorizedException();
+    }
+    const token: string = tokenData[1];
+    if (
+      await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      })
+    ) {
+      const jwtTokenData: TokenData = await this.jwtService.decode(token);
+      return (
+        jwtTokenData.userType.toLowerCase() == 'super user' ||
+        jwtTokenData.userType.toLowerCase() == 'admin'
+      );
+    }
+    throw new BadRequestException('Cannot verify the user');
+  }
+}

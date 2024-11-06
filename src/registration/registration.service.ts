@@ -100,6 +100,14 @@ export class RegistrationService {
     return registration;
   }
 
+  async updateRegistrationForPayment(userId: string): Promise<void> {
+    const registration = await this.registrationRepo.findOne({
+      where: { user: { userId: userId } },
+    });
+    registration.isPaid = true;
+    await this.registrationRepo.save(registration);
+  }
+
   async getRegistrationData(userId: string): Promise<Registration> {
     return await this.registrationRepo
       .createQueryBuilder('registration')
@@ -124,5 +132,13 @@ export class RegistrationService {
     registration.status = await this.statusService.findStatusByName('Accepted');
     await this.registrationRepo.save(registration);
     return 'Registration Accepted';
+  }
+
+  async getRegisteredCollegeList(): Promise<Registration[]> {
+    const registrationList = await this.registrationRepo.find({
+      relations: ['college', 'user', 'status'],
+    });
+
+    return registrationList;
   }
 }

@@ -17,6 +17,7 @@ export class UsersController {
     return await this.usersService.createUser(createUserRequest);
   }
 
+  @UseGuards(SuperUserAuthGuard)
   @Get('/v1/GetUserList')
   async GetUserList() {
     return await this.usersService.getUserList();

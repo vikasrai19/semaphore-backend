@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { RegistrationService } from './registration.service';
 import { RegistrationDto } from './dto/registration.dto';
 import { College } from './entities/college.entity';
 import { Registration } from './entities/registration.entity';
+import { SuAndAdminGuard } from 'src/auth/guards/auth.guard';
 
 @Controller('web/api/registration')
 export class RegistrationController {
@@ -32,5 +33,11 @@ export class RegistrationController {
     @Query('userId') userId: string,
   ): Promise<Registration> {
     return await this.registrationService.getRegistrationData(userId);
+  }
+
+  @UseGuards(SuAndAdminGuard)
+  @Get('v1/GetRegisteredCollegeList')
+  async getRegisteredCollegeList(): Promise<Registration[]> {
+    return await this.registrationService.getRegisteredCollegeList();
   }
 }
