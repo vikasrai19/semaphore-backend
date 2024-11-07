@@ -246,7 +246,7 @@ export class MainEventService {
     const teamScores = await this.teamScoreRepo
       .createQueryBuilder('teamScores')
       .leftJoin('teamScores.eventTeam', 'eventTeam')
-      .select('eventTeam.teamName', 'teamName')
+      .select('eventTeam.registration.teamName', 'teamName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
       .where('eventTeam.event = :eventId', { eventId: eventHead.event })
       .groupBy('eventTeam.teamName')
