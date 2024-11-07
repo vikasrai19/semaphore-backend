@@ -58,4 +58,9 @@ export class EventsController {
   async getEventsForRegistration(): Promise<Events[]> {
     return await this.eventsService.getEventDetailsForRegistration();
   }
+
+  @Get('/v1/GetEventMaxRounds')
+  async getEventMaxRounds(userId: string): Promise<number> {
+    return this.eventsService.getEventMaxRound(userId);
+  }
 }

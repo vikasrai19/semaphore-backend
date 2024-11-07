@@ -7,6 +7,9 @@ import {
   ParticipantAuthGuard,
   SuperUserAuthGuard,
 } from 'src/auth/guards/auth.guard';
+import { TeamScores } from './entities/team-scores.entity';
+import { UpdateScoreDto } from './dto/update-scores.dto';
+import { EventTeams } from './entities/event-teams.entities';
 
 @Controller('/web/api/mainEvent')
 export class MainEventController {
@@ -85,5 +88,33 @@ export class MainEventController {
   @Get('/v1/GetPendingPaymentList')
   async getPendingPaymentListForSU(): Promise<PaymentDetails[]> {
     return await this.mainEventService.getPendingPaymentListForSU();
+  }
+
+  @Get('/v1/GetTeamScoresForEventHeads')
+  async getTeamScoresForEventHeads(
+    userId: string,
+    roundNo: number,
+  ): Promise<TeamScores[]> {
+    return await this.mainEventService.getTeamScoresForEventHeads(
+      userId,
+      roundNo,
+    );
+  }
+
+  @Post('/v1/UpdateTeamScoreForEventHeads')
+  async updateTeamScoreForEventHeads(
+    scoreData: UpdateScoreDto,
+  ): Promise<string> {
+    return await this.mainEventService.updateTeamScoreForEventHeads(scoreData);
+  }
+
+  @Get('/v1/GetTeamRanking')
+  async getTeamRaking(userId: string): Promise<TeamScores[]> {
+    return await this.mainEventService.getTeamRankings(userId);
+  }
+
+  @Get('/v1/GetEventTeamsForHead')
+  async getEventTeamsForHead(userId: string): Promise<EventTeams[]> {
+    return await this.mainEventService.getEventTeamsForHead(userId);
   }
 }

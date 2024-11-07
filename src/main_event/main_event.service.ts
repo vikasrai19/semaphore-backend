@@ -12,6 +12,7 @@ import { PaymentDto } from './dto/payment.dto';
 import { StatusService } from 'src/status/status.service';
 import { PaymentDetails } from 'src/registration/entities/payment-details.entity';
 import { EmailService } from 'src/email/email.service';
+import { UpdateScoreDto } from './dto/update-scores.dto';
 
 @Injectable()
 export class MainEventService {
@@ -200,5 +201,68 @@ export class MainEventService {
       ],
     });
     return paymentDetails;
+  }
+
+  async getTeamScoresForEventHeads(
+    userId: string,
+    roundNo: number,
+  ): Promise<TeamScores[]> {
+    const eventHead = await this.eventService.findEventByUserId(userId);
+    const teamScores = await this.teamScoreRepo.find({
+      where: {
+        eventTeam: { event: { eventId: eventHead.event.eventId } },
+        roundNo: roundNo,
+      },
+    });
+    return teamScores;
+  }
+
+  async updateTeamScoreForEventHeads(
+    scoreData: UpdateScoreDto,
+  ): Promise<string> {
+    const eventHead = await this.eventService.findEventByUserId(
+      scoreData.userId,
+    );
+    const teamScores = await this.teamScoreRepo.find({
+      where: {
+        eventTeam: { event: { eventId: eventHead.event.eventId } },
+        roundNo: scoreData.roundNo,
+      },
+    });
+    teamScores.forEach(async (teamScore) => {
+      if (teamScore.score === 0) {
+        const teamScoreData = scoreData.scoreData.filter(
+          (data) => data.teamId === teamScore.eventTeam.eventTeamId,
+        );
+        teamScore.score = teamScoreData[0].marks;
+        await this.teamScoreRepo.save(teamScore);
+      }
+    });
+    return 'Successfully updated';
+  }
+
+  async getTeamRankings(userId: string): Promise<TeamScores[]> {
+    const eventHead = await this.eventService.findEventByUserId(userId);
+    const teamScores = await this.teamScoreRepo
+      .createQueryBuilder('teamScores')
+      .leftJoin('teamScores.eventTeam', 'eventTeam')
+      .select('eventTeam.teamName', 'teamName')
+      .addSelect('SUM(teamScores.score)', 'totalScore')
+      .where('eventTeam.event = :eventId', { eventId: eventHead.event })
+      .groupBy('eventTeam.teamName')
+      .orderBy('totalScore', 'DESC')
+      .getRawMany();
+
+    return teamScores;
+  }
+
+  async getEventTeamsForHead(userId: string): Promise<EventTeams[]> {
+    const eventHead = await this.eventService.findEventByUserId(userId);
+    return await this.eventTeamRepo.find({
+      where: {
+        event: eventHead.event,
+      },
+      relations: ['eventMembers', 'registration'],
+    });
   }
 }

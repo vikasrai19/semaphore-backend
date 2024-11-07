@@ -215,4 +215,17 @@ export class EventsService {
       order: { ['orderNo']: 'ASC' },
     });
   }
+
+  async findEventByUserId(userId: string): Promise<EventHeads> {
+    return await this.eventHeadRepository.findOne({
+      where: { user: { userId: userId } },
+    });
+  }
+
+  async getEventMaxRound(userId: string): Promise<number> {
+    const eventHead = await this.eventHeadRepository.findOne({
+      where: { user: { userId: userId } },
+    });
+    return eventHead.event.noOfRounds;
+  }
 }
