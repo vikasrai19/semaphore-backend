@@ -246,10 +246,11 @@ export class MainEventService {
     const teamScores = await this.teamScoreRepo
       .createQueryBuilder('teamScores')
       .leftJoin('teamScores.eventTeam', 'eventTeam')
-      .select('eventTeam.registration.teamName', 'teamName')
+      .leftJoin('eventTeam.registration', 'registration')
+      .select('registration.teamName', 'teamName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
-      .where('eventTeam.event = :eventId', { eventId: eventHead.event })
-      .groupBy('eventTeam.teamName')
+      .where('eventTeam.event = :eventId', { eventId: eventHead.event.eventId })
+      .groupBy('registration.teamName')
       .orderBy('totalScore', 'DESC')
       .getRawMany();
 
