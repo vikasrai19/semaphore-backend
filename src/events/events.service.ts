@@ -219,13 +219,14 @@ export class EventsService {
   async findEventByUserId(userId: string): Promise<EventHeads> {
     return await this.eventHeadRepository.findOne({
       where: { user: { userId: userId } },
-      relations: ['event']
+      relations: ['event'],
     });
   }
 
   async getEventMaxRound(userId: string): Promise<number> {
     const eventHead = await this.eventHeadRepository.findOne({
       where: { user: { userId: userId } },
+      relations: ['event'],
     });
     return eventHead.event.noOfRounds;
   }
