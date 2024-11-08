@@ -135,7 +135,6 @@ export class MainEventService {
       where: { paymentDetailsId: transactionId },
       relations: ['registration', 'registration.user'],
     });
-    console.log('payment data ', paymentData);
     const status = await this.statusService.findStatusByName('Successful');
     paymentData.status = status;
     await this.paymentRepo.save(paymentData);
