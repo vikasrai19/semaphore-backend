@@ -130,23 +130,21 @@ export class MainEventService {
     return paymentHistory;
   }
 
-  async verifyTransaction(
-    transactionId: string,
-    userId: string,
-  ): Promise<string> {
+  async verifyTransaction(transactionId: string): Promise<string> {
     const paymentData = await this.paymentRepo.findOne({
       where: { paymentDetailsId: transactionId },
+      relations: ['registration', 'registration.user'],
     });
+    console.log('payment data ', paymentData);
     const status = await this.statusService.findStatusByName('Successful');
     paymentData.status = status;
     await this.paymentRepo.save(paymentData);
-    await this.registrationService.acceptRegistration(userId);
-    const registration =
-      await this.registrationService.findRegistrationByUserId(userId);
-    await this.registrationService.updateRegistrationForPayment(userId);
+    await this.registrationService.acceptRegistration(
+      paymentData.registration.user.userId,
+    );
     await this.emailService.sendPaymentAcceptedEmail(
-      registration.user.email,
-      registration.user.fullName,
+      paymentData.registration.user.email,
+      paymentData.registration.user.fullName,
     );
     return 'Payment verified successfully';
   }

@@ -55,10 +55,7 @@ export class MainEventController {
       statusId: string;
     },
   ): Promise<string> {
-    return this.mainEventService.verifyTransaction(
-      paymentData.paymentId,
-      paymentData.userId,
-    );
+    return this.mainEventService.verifyTransaction(paymentData.paymentId);
   }
 
   @UseGuards(SuperUserAuthGuard)

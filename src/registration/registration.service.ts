@@ -130,6 +130,7 @@ export class RegistrationService {
       throw new BadRequestException('Registration not found');
     }
     registration.status = await this.statusService.findStatusByName('Accepted');
+    registration.isPaid = true;
     await this.registrationRepo.save(registration);
     return 'Registration Accepted';
   }
