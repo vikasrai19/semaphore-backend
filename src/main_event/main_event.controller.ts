@@ -23,7 +23,7 @@ export class MainEventController {
 
   @UseGuards(ParticipantAuthGuard)
   @Post('/v1/CompleteRegistration')
-  async completeRegistration(
+  async completeRegistration( 
     @Body() registrationData: EventRegistrationDto,
   ): Promise<string> {
     return await this.mainEventService.completeRegistration(registrationData);
