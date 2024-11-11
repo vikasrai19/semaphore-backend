@@ -4,6 +4,7 @@ import { RegistrationDto } from './dto/registration.dto';
 import { College } from './entities/college.entity';
 import { Registration } from './entities/registration.entity';
 import { SuAndAdminGuard } from 'src/auth/guards/auth.guard';
+import { TeamNameDto } from './dto/team-name.dto';
 
 @Controller('web/api/registration')
 export class RegistrationController {
@@ -39,5 +40,10 @@ export class RegistrationController {
   @Get('v1/GetRegisteredCollegeList')
   async getRegisteredCollegeList(): Promise<Registration[]> {
     return await this.registrationService.getRegisteredCollegeList();
+  }
+
+  @Post('/v1/AssignTeamName')
+  async assignTeamName(teamNameData: TeamNameDto): Promise<string> {
+    return await this.registrationService.updateTeamName(teamNameData);
   }
 }

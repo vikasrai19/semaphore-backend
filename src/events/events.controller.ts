@@ -60,7 +60,21 @@ export class EventsController {
   }
 
   @Get('/v1/GetEventMaxRounds')
-  async getEventMaxRounds(userId: string): Promise<number> {
+  async getEventMaxRounds(@Query('userId') userId: string): Promise<number> {
     return this.eventsService.getEventMaxRound(userId);
+  }
+
+  @Get('/v1/GetEventDetailsForHead')
+  async getEventDetailsForHead(
+    @Query('userId') userId: string,
+  ): Promise<Events> {
+    return await this.eventsService.getEventDetailsForHead(userId);
+  }
+
+  @Post('/v1/UpdateCurrentRound')
+  async updateCurrentRound(
+    @Body() data: { userId: string; currentRound: number },
+  ): Promise<string> {
+    return await this.eventsService.updateCurrentRound(data);
   }
 }

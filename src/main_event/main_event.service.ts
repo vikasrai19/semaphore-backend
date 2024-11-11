@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EventTeams } from './entities/event-teams.entities';
 import { In, Repository } from 'typeorm';
 import { RegistrationService } from 'src/registration/registration.service';
-import { EventRegistrationDto } from './dto/event-registration.dto';
+import {
+  EventRegistrationDto,
+  UpdateEventRegistrationDto,
+} from './dto/event-registration.dto';
 import { EventsService } from 'src/events/events.service';
 import { EventMembers } from './entities/event-members.entity';
 import { v4 as uuid4 } from 'uuid';
@@ -13,6 +16,12 @@ import { StatusService } from 'src/status/status.service';
 import { PaymentDetails } from 'src/registration/entities/payment-details.entity';
 import { EmailService } from 'src/email/email.service';
 import { UpdateScoreDto } from './dto/update-scores.dto';
+import {
+  CardDetailsDto,
+  EventHeadDashboardDto,
+} from './dto/event-head-dashboard.dto';
+import { EventHeads } from 'src/events/entities/event-heads.entity';
+import { PromoteTeamDto } from './dto/promoto-team.dto';
 
 @Injectable()
 export class MainEventService {
@@ -91,6 +100,49 @@ export class MainEventService {
     return 'Registration completed successfully';
   }
 
+  async updateEventRegistrationData(
+    registrationData: UpdateEventRegistrationDto,
+  ): Promise<string> {
+    const registration =
+      await this.registrationService.findRegistrationByUserId(
+        registrationData.userId,
+      );
+    registrationData?.eventRegistrationDetails?.forEach(async (ele) => {
+      ele?.memberList?.forEach(async (member) => {
+        if (member.eventMemberId !== null) {
+          const eventMember = await this.eventMemberRepo.findOne({
+            where: { eventMemberId: member?.eventMemberId },
+          });
+          eventMember.memberName = member?.memberName;
+          eventMember.memberPhoneNumber = member?.memberPhoneNumber;
+          await this.eventMemberRepo.save(eventMember);
+        } else {
+          if (
+            member.memberName !== null &&
+            member.memberName !== '' &&
+            member.memberPhoneNumber != null &&
+            member.memberPhoneNumber !== ''
+          ) {
+            const eventTeam = await this.eventTeamRepo.findOne({
+              where: {
+                event: { eventId: ele?.eventId },
+                registration: registration,
+              },
+            });
+            const memberData = this.eventMemberRepo.create({
+              eventMemberId: uuid4(),
+              memberName: member.memberName,
+              memberPhoneNumber: member.memberPhoneNumber,
+              eventTeam: eventTeam,
+            });
+            await this.eventMemberRepo.save(memberData);
+          }
+        }
+      });
+    });
+    return 'Successfully updated the data';
+  }
+
   async acceptPaymentDetails(paymentDetails: PaymentDto): Promise<string> {
     const status = await this.statusService.findStatusByName(
       'Waiting For Confirmation',
@@ -130,23 +182,20 @@ export class MainEventService {
     return paymentHistory;
   }
 
-  async verifyTransaction(
-    transactionId: string,
-    userId: string,
-  ): Promise<string> {
+  async verifyTransaction(transactionId: string): Promise<string> {
     const paymentData = await this.paymentRepo.findOne({
       where: { paymentDetailsId: transactionId },
+      relations: ['registration', 'registration.user'],
     });
     const status = await this.statusService.findStatusByName('Successful');
     paymentData.status = status;
     await this.paymentRepo.save(paymentData);
-    await this.registrationService.acceptRegistration(userId);
-    const registration =
-      await this.registrationService.findRegistrationByUserId(userId);
-    await this.registrationService.updateRegistrationForPayment(userId);
+    await this.registrationService.acceptRegistration(
+      paymentData.registration.user.userId,
+    );
     await this.emailService.sendPaymentAcceptedEmail(
-      registration.user.email,
-      registration.user.fullName,
+      paymentData.registration.user.email,
+      paymentData.registration.user.fullName,
     );
     return 'Payment verified successfully';
   }
@@ -213,6 +262,7 @@ export class MainEventService {
         eventTeam: { event: { eventId: eventHead.event.eventId } },
         roundNo: roundNo,
       },
+      relations: ['eventTeam', 'eventTeam.registration'],
     });
     return teamScores;
   }
@@ -247,10 +297,11 @@ export class MainEventService {
       .createQueryBuilder('teamScores')
       .leftJoin('teamScores.eventTeam', 'eventTeam')
       .leftJoin('eventTeam.registration', 'registration')
+      .select('registration.registrationId', 'registrationId')
       .select('registration.teamName', 'teamName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
       .where('eventTeam.event = :eventId', { eventId: eventHead.event.eventId })
-      .groupBy('registration.teamName')
+      .groupBy('registration.registrationId')
       .orderBy('totalScore', 'DESC')
       .getRawMany();
 
@@ -263,7 +314,83 @@ export class MainEventService {
       where: {
         event: eventHead.event,
       },
-      relations: ['eventMembers', 'registration'],
+      relations: ['eventMembers', 'registration', 'event'],
     });
+  }
+
+  // TODO: Dashboard endpoint
+  async getEventHeadDashboard(userId: string): Promise<EventHeadDashboardDto> {
+    const eventHead: EventHeads =
+      await this.eventService.findEventByUserId(userId);
+    const eventRankings = await this.teamScoreRepo
+      .createQueryBuilder('teamScores')
+      .leftJoin('teamScores.eventTeam', 'eventTeam')
+      .leftJoin('eventTeam.registration', 'registration')
+      .select('registration.teamName', 'teamName')
+      .addSelect('SUM(teamScores.score)', 'totalScore')
+      .where('eventTeam.event = :eventId', { eventId: eventHead.event.eventId })
+      .groupBy('registration.teamName')
+      .orderBy('totalScore', 'DESC')
+      .limit(3)
+      .getRawMany();
+
+    const totalTeamCount = await this.eventTeamRepo.count({
+      where: { event: eventHead.event },
+    });
+    const currentRound = await this.eventService.getCurrentRound(
+      eventHead.event.eventId,
+    );
+    const activeTeams = await this.teamScoreRepo.count({
+      where: { eventTeam: { event: eventHead.event }, roundNo: currentRound },
+    });
+
+    const cardDetailsList: CardDetailsDto[] = [];
+    cardDetailsList.push(new CardDetailsDto('Total Teams', totalTeamCount));
+    cardDetailsList.push(new CardDetailsDto('Current Round', currentRound));
+    cardDetailsList.push(new CardDetailsDto('Active Teams', activeTeams));
+    return new EventHeadDashboardDto(cardDetailsList, eventRankings);
+  }
+
+  async promotTeamToNextRound(data: PromoteTeamDto): Promise<string> {
+    const eventTeam = await this.eventTeamRepo.findOne({
+      where: { eventTeamId: data.teamId },
+    });
+    eventTeam.currentRound = data.roundNo;
+    await this.eventTeamRepo.save(eventTeam);
+    // TODO: Send Email Notification
+    const teamScoreData = this.teamScoreRepo.create({
+      eventScoreId: uuid4(),
+      eventTeam: eventTeam,
+      score: 0,
+      roundNo: data.roundNo,
+    });
+    await this.teamScoreRepo.save(teamScoreData);
+    return 'Promoted Successfully';
+  }
+
+  async getTeamScoreRanking(eventId: string): Promise<TeamScores[]> {
+    const teamScores = await this.teamScoreRepo
+      .createQueryBuilder('teamScores')
+      .leftJoin('teamScores.eventTeam', 'eventTeam')
+      .leftJoin('eventTeam.registration', 'registration')
+      .select('registration.teamName', 'teamName')
+      .addSelect('SUM(teamScores.score)', 'totalScore')
+      .where('eventTeam.event = :eventId', { eventId: eventId })
+      .groupBy('registration.teamName')
+      .orderBy('totalScore', 'DESC')
+      .getRawMany();
+    return teamScores;
+  }
+
+  async getEventTeamsForPromotion(userId: string): Promise<TeamScores[]> {
+    const eventHead = await this.eventService.findEventByUserId(userId);
+    const eventTeams = await this.teamScoreRepo.find({
+      where: {
+        eventTeam: { event: eventHead.event },
+        roundNo: eventHead.event.currentRound,
+      },
+      relations: ['eventTeam', 'eventTeam.registration'],
+    });
+    return eventTeams;
   }
 }

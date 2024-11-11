@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { MainEventService } from './main_event.service';
-import { EventRegistrationDto } from './dto/event-registration.dto';
+import {
+  EventRegistrationDto,
+  UpdateEventRegistrationDto,
+} from './dto/event-registration.dto';
 import { PaymentDto } from './dto/payment.dto';
 import { PaymentDetails } from 'src/registration/entities/payment-details.entity';
 import {
@@ -10,6 +13,8 @@ import {
 import { TeamScores } from './entities/team-scores.entity';
 import { UpdateScoreDto } from './dto/update-scores.dto';
 import { EventTeams } from './entities/event-teams.entities';
+import { EventHeadDashboardDto } from './dto/event-head-dashboard.dto';
+import { PromoteTeamDto } from './dto/promoto-team.dto';
 
 @Controller('/web/api/mainEvent')
 export class MainEventController {
@@ -55,10 +60,7 @@ export class MainEventController {
       statusId: string;
     },
   ): Promise<string> {
-    return this.mainEventService.verifyTransaction(
-      paymentData.paymentId,
-      paymentData.userId,
-    );
+    return this.mainEventService.verifyTransaction(paymentData.paymentId);
   }
 
   @UseGuards(SuperUserAuthGuard)
@@ -92,8 +94,8 @@ export class MainEventController {
 
   @Get('/v1/GetTeamScoresForEventHeads')
   async getTeamScoresForEventHeads(
-    userId: string,
-    roundNo: number,
+    @Query('userId') userId: string,
+    @Query('roundNo') roundNo: number,
   ): Promise<TeamScores[]> {
     return await this.mainEventService.getTeamScoresForEventHeads(
       userId,
@@ -103,18 +105,56 @@ export class MainEventController {
 
   @Post('/v1/UpdateTeamScoreForEventHeads')
   async updateTeamScoreForEventHeads(
-    scoreData: UpdateScoreDto,
+    @Body() scoreData: UpdateScoreDto,
   ): Promise<string> {
     return await this.mainEventService.updateTeamScoreForEventHeads(scoreData);
   }
 
   @Get('/v1/GetTeamRanking')
-  async getTeamRaking(userId: string): Promise<TeamScores[]> {
+  async getTeamRaking(@Query('userId') userId: string): Promise<TeamScores[]> {
     return await this.mainEventService.getTeamRankings(userId);
   }
 
   @Get('/v1/GetEventTeamsForHead')
-  async getEventTeamsForHead(userId: string): Promise<EventTeams[]> {
+  async getEventTeamsForHead(
+    @Query('userId') userId: string,
+  ): Promise<EventTeams[]> {
     return await this.mainEventService.getEventTeamsForHead(userId);
+  }
+
+  @Get('/v1/GetEventHeadDashbord')
+  async getEventHeadDashboard(
+    @Query('userId') userId: string,
+  ): Promise<EventHeadDashboardDto> {
+    return await this.mainEventService.getEventHeadDashboard(userId);
+  }
+
+  @Post('/v1/PromotoTeamToNextRound')
+  async promoteTeamToNextRound(@Body() data: PromoteTeamDto): Promise<string> {
+    return await this.promoteTeamToNextRound(data);
+  }
+
+  @Get('/v1/GetEventRankings')
+  async getEventRankings(
+    @Query('eventId') eventId: string,
+  ): Promise<TeamScores[]> {
+    return await this.mainEventService.getTeamScoreRanking(eventId);
+  }
+
+  @Get('/v1/GetEventTeamsForPromotion')
+  async getEventTeamsForPromotion(
+    @Query('userId') userId: string,
+  ): Promise<TeamScores[]> {
+    return await this.mainEventService.getEventTeamsForPromotion(userId);
+  }
+
+  @UseGuards(ParticipantAuthGuard)
+  @Post('/v1/UpdateTeamMemberDetails')
+  async getEventTeamMembers(
+    @Body() registrationData: UpdateEventRegistrationDto,
+  ): Promise<string> {
+    return await this.mainEventService.updateEventRegistrationData(
+      registrationData,
+    );
   }
 }
