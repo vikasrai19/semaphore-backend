@@ -230,4 +230,42 @@ export class EventsService {
     });
     return eventHead.event.noOfRounds;
   }
+
+  async getCurrentRound(eventId: string): Promise<number> {
+    const event = await this.eventRepository.findOne({
+      where: { eventId: eventId },
+    });
+    return event.currentRound;
+  }
+
+  async getEventDetailsForHead(userId: string): Promise<Events> {
+    const eventHead = await this.eventHeadRepository.findOne({
+      where: { user: { userId: userId } },
+      relations: ['event'],
+    });
+    const event = await this.eventRepository.findOne({
+      where: { eventId: eventHead.event.eventId },
+      relations: ['eventRules'],
+    });
+    if (event && event.eventRules) {
+      event.eventRules.sort((a, b) => a.ruleNo - b.ruleNo);
+    }
+    return event;
+  }
+
+  async updateCurrentRound(data: {
+    userId: string;
+    currentRound: number;
+  }): Promise<string> {
+    const eventHead = await this.eventHeadRepository.findOne({
+      where: { user: { userId: data.userId } },
+      relations: ['event'],
+    });
+    const event = await this.eventRepository.findOne({
+      where: { eventId: eventHead.event.eventId },
+    });
+    event.currentRound = data.currentRound;
+    await this.eventRepository.save(event);
+    return 'Successfully updated';
+  }
 }

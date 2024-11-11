@@ -9,6 +9,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { College } from './entities/college.entity';
 import { StatusService } from '../status/status.service';
 import { EmailService } from '../email/email.service';
+import { TeamNameDto } from './dto/team-name.dto';
 
 @Injectable()
 export class RegistrationService {
@@ -141,5 +142,14 @@ export class RegistrationService {
     });
 
     return registrationList;
+  }
+
+  async updateTeamName(teamNameData: TeamNameDto): Promise<string> {
+    const teamData = await this.registrationRepo.findOne({
+      where: { registrationId: teamNameData.registrationId },
+    });
+    teamData.teamName = teamNameData.teamName;
+    await this.registrationRepo.save(teamData);
+    return 'Successfully updated the team data';
   }
 }
