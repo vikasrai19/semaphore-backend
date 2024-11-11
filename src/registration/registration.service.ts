@@ -120,6 +120,7 @@ export class RegistrationService {
       .leftJoinAndSelect('eventTeams.eventMembers', 'eventMembers')
       .where('user.userId = :userId', { userId })
       .orderBy('event.orderNo', 'ASC')
+      .orderBy('eventMembers.memberName', 'DESC')
       .getOne();
   }
 

@@ -3,7 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EventTeams } from './entities/event-teams.entities';
 import { In, Repository } from 'typeorm';
 import { RegistrationService } from 'src/registration/registration.service';
-import { EventRegistrationDto } from './dto/event-registration.dto';
+import {
+  EventRegistrationDto,
+  UpdateEventRegistrationDto,
+} from './dto/event-registration.dto';
 import { EventsService } from 'src/events/events.service';
 import { EventMembers } from './entities/event-members.entity';
 import { v4 as uuid4 } from 'uuid';
@@ -95,6 +98,49 @@ export class MainEventService {
       }
     });
     return 'Registration completed successfully';
+  }
+
+  async updateEventRegistrationData(
+    registrationData: UpdateEventRegistrationDto,
+  ): Promise<string> {
+    const registration =
+      await this.registrationService.findRegistrationByUserId(
+        registrationData.userId,
+      );
+    registrationData?.eventRegistrationDetails?.forEach(async (ele) => {
+      ele?.memberList?.forEach(async (member) => {
+        if (member.eventMemberId !== null) {
+          const eventMember = await this.eventMemberRepo.findOne({
+            where: { eventMemberId: member?.eventMemberId },
+          });
+          eventMember.memberName = member?.memberName;
+          eventMember.memberPhoneNumber = member?.memberPhoneNumber;
+          await this.eventMemberRepo.save(eventMember);
+        } else {
+          if (
+            member.memberName !== null &&
+            member.memberName !== '' &&
+            member.memberPhoneNumber != null &&
+            member.memberPhoneNumber !== ''
+          ) {
+            const eventTeam = await this.eventTeamRepo.findOne({
+              where: {
+                event: { eventId: ele?.eventId },
+                registration: registration,
+              },
+            });
+            const memberData = this.eventMemberRepo.create({
+              eventMemberId: uuid4(),
+              memberName: member.memberName,
+              memberPhoneNumber: member.memberPhoneNumber,
+              eventTeam: eventTeam,
+            });
+            await this.eventMemberRepo.save(memberData);
+          }
+        }
+      });
+    });
+    return 'Successfully updated the data';
   }
 
   async acceptPaymentDetails(paymentDetails: PaymentDto): Promise<string> {

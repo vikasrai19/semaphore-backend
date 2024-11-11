@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { MainEventService } from './main_event.service';
-import { EventRegistrationDto } from './dto/event-registration.dto';
+import {
+  EventRegistrationDto,
+  UpdateEventRegistrationDto,
+} from './dto/event-registration.dto';
 import { PaymentDto } from './dto/payment.dto';
 import { PaymentDetails } from 'src/registration/entities/payment-details.entity';
 import {
@@ -143,5 +146,15 @@ export class MainEventController {
     @Query('userId') userId: string,
   ): Promise<TeamScores[]> {
     return await this.mainEventService.getEventTeamsForPromotion(userId);
+  }
+
+  @UseGuards(ParticipantAuthGuard)
+  @Post('/v1/UpdateTeamMemberDetails')
+  async getEventTeamMembers(
+    @Body() registrationData: UpdateEventRegistrationDto,
+  ): Promise<string> {
+    return await this.mainEventService.updateEventRegistrationData(
+      registrationData,
+    );
   }
 }

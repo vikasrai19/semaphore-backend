@@ -27,7 +27,6 @@ export class UsertypeService {
     if (await this.userTypeOrderNoExists(userTypeData.orderNo)) {
       throw new BadRequestException('User type order no already exists');
     }
-    console.log(userTypeData);
     const userType = this.userTypeRepository.create({
       userType: userTypeData.userType,
       orderNo: userTypeData.orderNo,
