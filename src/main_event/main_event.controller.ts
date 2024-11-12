@@ -134,11 +134,11 @@ export class MainEventController {
     return await this.promoteTeamToNextRound(data);
   }
 
-  @Get('/v1/GetEventRankings')
+  @Post('/v1/GetEventRankings')
   async getEventRankings(
-    @Query('eventId') eventId: string,
+    @Body() data: { eventId: string },
   ): Promise<TeamScores[]> {
-    return await this.mainEventService.getTeamScoreRanking(eventId);
+    return await this.mainEventService.getTeamScoreRanking(data.eventId);
   }
 
   @Get('/v1/GetEventTeamsForPromotion')
