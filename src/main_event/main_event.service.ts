@@ -278,12 +278,16 @@ export class MainEventService {
         eventTeam: { event: { eventId: eventHead.event.eventId } },
         roundNo: scoreData.roundNo,
       },
+      relations: ['eventTeam', 'eventTeam.event'],
     });
+    if (teamScores === null) {
+      throw new BadRequestException('Team scores not found');
+    }
     teamScores.forEach(async (teamScore) => {
       if (teamScore.score === 0) {
-        const teamScoreData = scoreData.scoreData.filter(
-          (data) => data.teamId === teamScore.eventTeam.eventTeamId,
-        );
+        const teamScoreData = scoreData.scoreData.filter((data) => {
+          return data.teamId == teamScore.eventTeam.eventTeamId;
+        });
         teamScore.score = teamScoreData[0].marks;
         await this.teamScoreRepo.save(teamScore);
       }
@@ -297,11 +301,14 @@ export class MainEventService {
       .createQueryBuilder('teamScores')
       .leftJoin('teamScores.eventTeam', 'eventTeam')
       .leftJoin('eventTeam.registration', 'registration')
+      .leftJoin('registration.college', 'college')
       .select('registration.registrationId', 'registrationId')
+      .select('college.collegeName', 'collegeName')
       .select('registration.teamName', 'teamName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
       .where('eventTeam.event = :eventId', { eventId: eventHead.event.eventId })
       .groupBy('registration.registrationId')
+      // .groupBy('college.collegeName')
       .orderBy('totalScore', 'DESC')
       .getRawMany();
 
@@ -329,7 +336,7 @@ export class MainEventService {
       .select('registration.teamName', 'teamName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
       .where('eventTeam.event = :eventId', { eventId: eventHead.event.eventId })
-      .groupBy('registration.teamName')
+      .groupBy('registration.registrationId')
       .orderBy('totalScore', 'DESC')
       .limit(3)
       .getRawMany();
@@ -357,7 +364,6 @@ export class MainEventService {
     });
     eventTeam.currentRound = data.roundNo;
     await this.eventTeamRepo.save(eventTeam);
-    // TODO: Send Email Notification
     const teamScoreData = this.teamScoreRepo.create({
       eventScoreId: uuid4(),
       eventTeam: eventTeam,
@@ -365,6 +371,7 @@ export class MainEventService {
       roundNo: data.roundNo,
     });
     await this.teamScoreRepo.save(teamScoreData);
+    // TODO: Send Email Notification
     return 'Promoted Successfully';
   }
 
@@ -373,6 +380,7 @@ export class MainEventService {
       .createQueryBuilder('teamScores')
       .leftJoin('teamScores.eventTeam', 'eventTeam')
       .leftJoin('eventTeam.registration', 'registration')
+      .leftJoin('registration.college', 'college')
       .select('registration.teamName', 'teamName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
       .where('eventTeam.event = :eventId', { eventId: eventId })

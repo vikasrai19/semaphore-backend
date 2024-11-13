@@ -129,9 +129,9 @@ export class MainEventController {
     return await this.mainEventService.getEventHeadDashboard(userId);
   }
 
-  @Post('/v1/PromotoTeamToNextRound')
+  @Post('/v1/PromoteTeamToNextRound')
   async promoteTeamToNextRound(@Body() data: PromoteTeamDto): Promise<string> {
-    return await this.promoteTeamToNextRound(data);
+    return await this.mainEventService.promotTeamToNextRound(data);
   }
 
   @Post('/v1/GetEventRankings')
