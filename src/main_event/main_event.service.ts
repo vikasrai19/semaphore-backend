@@ -301,14 +301,17 @@ export class MainEventService {
       .createQueryBuilder('teamScores')
       .leftJoin('teamScores.eventTeam', 'eventTeam')
       .leftJoin('eventTeam.registration', 'registration')
+      .leftJoin('eventTeam.event', 'event')
       .leftJoin('registration.college', 'college')
       .select('registration.registrationId', 'registrationId')
-      .select('college.collegeName', 'collegeName')
-      .select('registration.teamName', 'teamName')
+      .addSelect('college.collegeName', 'collegeName')
+      .addSelect('registration.teamName', 'teamName')
+      .addSelect('event.eventName', 'eventName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
       .where('eventTeam.event = :eventId', { eventId: eventHead.event.eventId })
-      .groupBy('registration.registrationId')
-      // .groupBy('college.collegeName')
+      .groupBy(
+        'registration.registrationId, registration.teamName, college.collegeName, event.eventName',
+      )
       .orderBy('totalScore', 'DESC')
       .getRawMany();
 
@@ -361,6 +364,7 @@ export class MainEventService {
   async promotTeamToNextRound(data: PromoteTeamDto): Promise<string> {
     const eventTeam = await this.eventTeamRepo.findOne({
       where: { eventTeamId: data.teamId },
+      relations: ['event', 'registration', 'registration.user'],
     });
     eventTeam.currentRound = data.roundNo;
     await this.eventTeamRepo.save(eventTeam);
@@ -371,7 +375,11 @@ export class MainEventService {
       roundNo: data.roundNo,
     });
     await this.teamScoreRepo.save(teamScoreData);
-    // TODO: Send Email Notification
+    await this.emailService.sendNextRoundSelectedEmail(
+      eventTeam.registration.user.email,
+      eventTeam.registration.user.fullName,
+      eventTeam.event.eventName,
+    );
     return 'Promoted Successfully';
   }
 
@@ -379,12 +387,18 @@ export class MainEventService {
     const teamScores = await this.teamScoreRepo
       .createQueryBuilder('teamScores')
       .leftJoin('teamScores.eventTeam', 'eventTeam')
+      .leftJoin('eventTeam.event', 'event')
       .leftJoin('eventTeam.registration', 'registration')
       .leftJoin('registration.college', 'college')
-      .select('registration.teamName', 'teamName')
+      .addSelect('registration.teamName', 'teamName')
+      .addSelect('college.collegeName', 'collegeName')
+      .addSelect('registration.registrationId', 'registrationId')
+      .addSelect('event.eventName', 'eventName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
       .where('eventTeam.event = :eventId', { eventId: eventId })
-      .groupBy('registration.teamName')
+      .groupBy(
+        'registration.registrationId, college.collegeName, registration.teamName, event.eventName',
+      )
       .orderBy('totalScore', 'DESC')
       .getRawMany();
     return teamScores;

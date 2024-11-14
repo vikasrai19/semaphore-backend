@@ -133,3 +133,32 @@ export class SuAndAdminGuard implements CanActivate {
     throw new BadRequestException('Cannot verify the user');
   }
 }
+
+@Injectable()
+export class AccoladesAuthGuard implements CanActivate {
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const authorization = request.headers.authorization;
+    if (authorization === null || authorization === undefined) {
+      throw new UnauthorizedException();
+    }
+    const tokenData = authorization.split(' ');
+    if (tokenData[0] != 'Bearer') {
+      throw new UnauthorizedException();
+    }
+    const token: string = tokenData[1];
+    if (
+      await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      })
+    ) {
+      const jwtTokenData: TokenData = await this.jwtService.decode(token);
+      return jwtTokenData.userType.toLowerCase() == 'accolades';
+    }
+    throw new BadRequestException('Cannot verify the user');
+  }
+}
