@@ -371,13 +371,13 @@ export class MainEventService {
       where: { eventTeamId: data.teamId },
       relations: ['event', 'registration', 'registration.user'],
     });
-    eventTeam.currentRound = data.roundNo;
+    eventTeam.currentRound = data.roundNo + 1;
     await this.eventTeamRepo.save(eventTeam);
     const teamScoreData = this.teamScoreRepo.create({
       eventScoreId: uuid4(),
       eventTeam: eventTeam,
       score: 0,
-      roundNo: data.roundNo,
+      roundNo: parseInt(data.roundNo.toString()) + 1,
     });
     await this.teamScoreRepo.save(teamScoreData);
     await this.emailService.sendNextRoundSelectedEmail(
