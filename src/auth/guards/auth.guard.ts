@@ -127,7 +127,8 @@ export class SuAndAdminGuard implements CanActivate {
       const jwtTokenData: TokenData = await this.jwtService.decode(token);
       return (
         jwtTokenData.userType.toLowerCase() == 'super user' ||
-        jwtTokenData.userType.toLowerCase() == 'admin'
+        jwtTokenData.userType.toLowerCase() == 'admin' ||
+        jwtTokenData.userType.toLowerCase() == 'registration committe'
       );
     }
     throw new BadRequestException('Cannot verify the user');
