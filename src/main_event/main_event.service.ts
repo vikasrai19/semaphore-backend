@@ -324,7 +324,12 @@ export class MainEventService {
       where: {
         event: eventHead.event,
       },
-      relations: ['eventMembers', 'registration', 'event'],
+      relations: [
+        'eventMembers',
+        'registration',
+        'event',
+        'registration.college',
+      ],
     });
   }
 
