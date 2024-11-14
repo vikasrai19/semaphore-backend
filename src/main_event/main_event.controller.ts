@@ -7,6 +7,8 @@ import {
 import { PaymentDto } from './dto/payment.dto';
 import { PaymentDetails } from 'src/registration/entities/payment-details.entity';
 import {
+  AccoladesAuthGuard,
+  EventHeadAuthGuard,
   ParticipantAuthGuard,
   SuperUserAuthGuard,
 } from 'src/auth/guards/auth.guard';
@@ -103,6 +105,7 @@ export class MainEventController {
     );
   }
 
+  @UseGuards(EventHeadAuthGuard)
   @Post('/v1/UpdateTeamScoreForEventHeads')
   async updateTeamScoreForEventHeads(
     @Body() scoreData: UpdateScoreDto,
@@ -110,11 +113,13 @@ export class MainEventController {
     return await this.mainEventService.updateTeamScoreForEventHeads(scoreData);
   }
 
+  @UseGuards(EventHeadAuthGuard)
   @Get('/v1/GetTeamRanking')
   async getTeamRaking(@Query('userId') userId: string): Promise<TeamScores[]> {
     return await this.mainEventService.getTeamRankings(userId);
   }
 
+  // @UseGuards(EventHeadAuthGuard)
   @Get('/v1/GetEventTeamsForHead')
   async getEventTeamsForHead(
     @Query('userId') userId: string,
@@ -122,6 +127,7 @@ export class MainEventController {
     return await this.mainEventService.getEventTeamsForHead(userId);
   }
 
+  @UseGuards(EventHeadAuthGuard)
   @Get('/v1/GetEventHeadDashbord')
   async getEventHeadDashboard(
     @Query('userId') userId: string,
@@ -129,18 +135,21 @@ export class MainEventController {
     return await this.mainEventService.getEventHeadDashboard(userId);
   }
 
-  @Post('/v1/PromotoTeamToNextRound')
+  @UseGuards(EventHeadAuthGuard)
+  @Post('/v1/PromoteTeamToNextRound')
   async promoteTeamToNextRound(@Body() data: PromoteTeamDto): Promise<string> {
-    return await this.promoteTeamToNextRound(data);
+    return await this.mainEventService.promotTeamToNextRound(data);
   }
 
-  @Get('/v1/GetEventRankings')
+  @UseGuards(AccoladesAuthGuard)
+  @Post('/v1/GetEventRankings')
   async getEventRankings(
-    @Query('eventId') eventId: string,
+    @Body() data: { eventId: string },
   ): Promise<TeamScores[]> {
-    return await this.mainEventService.getTeamScoreRanking(eventId);
+    return await this.mainEventService.getTeamScoreRanking(data.eventId);
   }
 
+  @UseGuards(EventHeadAuthGuard)
   @Get('/v1/GetEventTeamsForPromotion')
   async getEventTeamsForPromotion(
     @Query('userId') userId: string,
