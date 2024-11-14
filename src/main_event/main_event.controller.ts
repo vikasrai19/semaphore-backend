@@ -141,7 +141,7 @@ export class MainEventController {
     return await this.mainEventService.promotTeamToNextRound(data);
   }
 
-  @UseGuards(AccoladesAuthGuard)
+  // @UseGuards(AccoladesAuthGuard)
   @Post('/v1/GetEventRankings')
   async getEventRankings(
     @Body() data: { eventId: string },

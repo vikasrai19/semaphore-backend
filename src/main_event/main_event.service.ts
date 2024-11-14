@@ -390,12 +390,12 @@ export class MainEventService {
       .leftJoin('eventTeam.event', 'event')
       .leftJoin('eventTeam.registration', 'registration')
       .leftJoin('registration.college', 'college')
+      .select('registration.registrationId', 'registrationId')
       .addSelect('registration.teamName', 'teamName')
       .addSelect('college.collegeName', 'collegeName')
-      .addSelect('registration.registrationId', 'registrationId')
       .addSelect('event.eventName', 'eventName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
-      .where('eventTeam.event = :eventId', { eventId: eventId })
+      .where('eventTeam.event.eventId = :eventId', { eventId: eventId })
       .groupBy(
         'registration.registrationId, college.collegeName, registration.teamName, event.eventName',
       )
