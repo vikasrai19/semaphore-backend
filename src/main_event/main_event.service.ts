@@ -377,19 +377,29 @@ export class MainEventService {
     });
     eventTeam.currentRound = data.roundNo + 1;
     await this.eventTeamRepo.save(eventTeam);
-    const teamScoreData = this.teamScoreRepo.create({
-      eventScoreId: uuid4(),
-      eventTeam: eventTeam,
-      score: 0,
-      roundNo: parseInt(data.roundNo.toString()) + 1,
+    const existTeamData = await this.teamScoreRepo.findOne({
+      where: {
+        eventTeam: eventTeam,
+        roundNo: parseInt(data.roundNo.toString()) + 1,
+      },
     });
-    await this.teamScoreRepo.save(teamScoreData);
-    await this.emailService.sendNextRoundSelectedEmail(
-      eventTeam.registration.user.email,
-      eventTeam.registration.user.fullName,
-      eventTeam.event.eventName,
-    );
-    return 'Promoted Successfully';
+    if (existTeamData === null || existTeamData === undefined) {
+      const teamScoreData = this.teamScoreRepo.create({
+        eventScoreId: uuid4(),
+        eventTeam: eventTeam,
+        score: 0,
+        roundNo: parseInt(data.roundNo.toString()) + 1,
+      });
+      await this.teamScoreRepo.save(teamScoreData);
+      await this.emailService.sendNextRoundSelectedEmail(
+        eventTeam.registration.user.email,
+        eventTeam.registration.user.fullName,
+        eventTeam.event.eventName,
+      );
+      return 'Promoted Successfully';
+    } else {
+      return 'Team Is Already Promoted';
+    }
   }
 
   async getTeamScoreRanking(eventId: string): Promise<TeamScores[]> {
