@@ -262,7 +262,11 @@ export class MainEventService {
         eventTeam: { event: { eventId: eventHead.event.eventId } },
         roundNo: roundNo,
       },
-      relations: ['eventTeam', 'eventTeam.registration'],
+      relations: [
+        'eventTeam',
+        'eventTeam.registration',
+        'eventTeam.registration.college',
+      ],
     });
     return teamScores;
   }
