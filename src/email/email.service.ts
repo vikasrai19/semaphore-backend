@@ -117,8 +117,9 @@ export class EmailService {
     toEmailId: string,
     fullName: string,
     eventName: string,
+    roundNo: number,
   ): Promise<void> {
-    const subject = `🎉 Congratulations! You have been selected for the Next Round of ${eventName}`;
+    const subject = `🎉 Congratulations! You have been selected for the Round ${roundNo} of ${eventName}`;
     const body = `<h1>Hello ${fullName},</h1><p>Congratulations! Your team has been promoted to the next round of <strong>${eventName}</strong> at <strong>Semaphore 2K24</strong>!</p><p>We're thrilled to see your team's progress and wish you the best for the upcoming challenges. </p><p> Good luck!</p><p>With warm regards,<br>The Semaphore Team<br>Semaphore 2K24</p>`;
     const mailOptions = {
       from: this.configService.get<string>('GMAIL_USER'),

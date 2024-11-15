@@ -395,6 +395,7 @@ export class MainEventService {
         eventTeam.registration.user.email,
         eventTeam.registration.user.fullName,
         eventTeam.event.eventName,
+        parseInt(data.roundNo.toString()) + 1,
       );
       return 'Promoted Successfully';
     } else {
