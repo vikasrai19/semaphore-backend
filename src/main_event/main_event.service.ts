@@ -312,6 +312,7 @@ export class MainEventService {
       .addSelect('registration.teamName', 'teamName')
       .addSelect('event.eventName', 'eventName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
+      .addSelect('MAX(roundNo)', 'maxRound')
       .where('eventTeam.event = :eventId', { eventId: eventHead.event.eventId })
       .groupBy(
         'registration.registrationId, registration.teamName, college.collegeName, event.eventName',
@@ -415,6 +416,7 @@ export class MainEventService {
       .addSelect('college.collegeName', 'collegeName')
       .addSelect('event.eventName', 'eventName')
       .addSelect('SUM(teamScores.score)', 'totalScore')
+      .addSelect('MAX(roundNo)', 'maxRound')
       .where('eventTeam.event.eventId = :eventId', { eventId: eventId })
       .groupBy(
         'registration.registrationId, college.collegeName, registration.teamName, event.eventName',

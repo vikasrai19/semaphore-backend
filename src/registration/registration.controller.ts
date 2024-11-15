@@ -43,7 +43,16 @@ export class RegistrationController {
   }
 
   @Post('/v1/AssignTeamName')
-  async assignTeamName(teamNameData: TeamNameDto): Promise<string> {
+  async assignTeamName(@Body() teamNameData: TeamNameDto): Promise<string> {
     return await this.registrationService.updateTeamName(teamNameData);
+  }
+
+  @Post('/v1/UpdateTeamAsReported')
+  async updateTeamAsReported(
+    @Body() data: { registrationId: string },
+  ): Promise<string> {
+    return await this.registrationService.updateTeamAsReported(
+      data?.registrationId,
+    );
   }
 }

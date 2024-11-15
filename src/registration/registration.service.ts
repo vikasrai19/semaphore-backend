@@ -153,4 +153,16 @@ export class RegistrationService {
     await this.registrationRepo.save(teamData);
     return 'Successfully updated the team data';
   }
+
+  async updateTeamAsReported(registrationId: string): Promise<string> {
+    const teamData = await this.registrationRepo.findOne({
+      where: { registrationId: registrationId },
+    });
+    if (teamData.isPaid === false) {
+      throw new BadRequestException('Registration fees is not paid');
+    }
+    teamData.isTeamReported = true;
+    await this.registrationRepo.save(teamData);
+    return 'Successfully updated the team data';
+  }
 }
