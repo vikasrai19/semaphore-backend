@@ -7,6 +7,7 @@ import { UsertypeService } from '../usertype/usertype.service';
 import { BcryptUtil } from '../utils/bcrypt.util';
 import { UserType } from '../usertype/usertype.entity';
 import { v4 as uuid4 } from 'uuid';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,7 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     private readonly userTypeService: UsertypeService,
     private readonly bcrypt: BcryptUtil,
+    private readonly emailService: EmailService,
   ) {}
 
   async findUserByUserName(username: string): Promise<User> {
@@ -125,5 +127,43 @@ export class UsersService {
     user.isEmailValid = true;
     await this.userRepository.save(user);
     return 'Email verified successfully';
+  }
+
+  async sendPasswordResetLink(userId: string): Promise<string> {
+    const user = await this.userRepository.findOne({
+      where: { userId: userId },
+    });
+    await this.emailService.sendPasswordResetLinkEmail(
+      user.email,
+      user.fullName,
+      userId,
+    );
+    return 'Please check your mail';
+  }
+
+  async updateUserPassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<string> {
+    // const user: User = await this.userService.findUserByEmail(input.email);
+    const user = await this.userRepository.findOne({
+      where: { userId: userId },
+    });
+    if (user == null) {
+      throw new BadRequestException('User not found');
+    }
+    const isMatch: boolean = await this.bcrypt.matchPassword(
+      oldPassword,
+      user.password,
+    );
+    if (!isMatch) {
+      throw new BadRequestException('Old Password doesnot match');
+    }
+
+    const hashedPassword = await this.bcrypt.hashPassword(newPassword);
+    user.password = hashedPassword;
+    await this.userRepository.save(user);
+    return 'Successfully updated the password';
   }
 }

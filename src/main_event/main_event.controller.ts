@@ -17,6 +17,7 @@ import { UpdateScoreDto } from './dto/update-scores.dto';
 import { EventTeams } from './entities/event-teams.entities';
 import { EventHeadDashboardDto } from './dto/event-head-dashboard.dto';
 import { PromoteTeamDto } from './dto/promoto-team.dto';
+import { EventMembers } from './entities/event-members.entity';
 
 @Controller('/web/api/mainEvent')
 export class MainEventController {
@@ -119,7 +120,7 @@ export class MainEventController {
     return await this.mainEventService.getTeamRankings(userId);
   }
 
-  // @UseGuards(EventHeadAuthGuard)
+  @UseGuards(EventHeadAuthGuard)
   @Get('/v1/GetEventTeamsForHead')
   async getEventTeamsForHead(
     @Query('userId') userId: string,
@@ -175,5 +176,37 @@ export class MainEventController {
     return await this.mainEventService.deleteRegistrationDetails(
       data.registrationId,
     );
+  }
+
+  @UseGuards(SuperUserAuthGuard)
+  @Post('/v1/GetTeamDetailsFromRegistration')
+  async getTeamDetailsFromRegistration(
+    @Body() data: { registrationId: string },
+  ): Promise<EventMembers[]> {
+    return await this.mainEventService.getEventMembersFromRegistration(
+      data.registrationId,
+    );
+  }
+
+  @UseGuards(SuperUserAuthGuard)
+  @Post('/v1/DeleteEventMember')
+  async deleteEventMember(
+    @Body() data: { eventMemberId: string },
+  ): Promise<string> {
+    return await this.mainEventService.deleteEventMember(data.eventMemberId);
+  }
+
+  @UseGuards(SuperUserAuthGuard)
+  @Get('/v1/GetEmptyTeams')
+  async getEmptyTeams(): Promise<EventTeams[]> {
+    return await this.mainEventService.getEmptyEventTeams();
+  }
+
+  @UseGuards(SuperUserAuthGuard)
+  @Post('/v1/DeleteEventTeams')
+  async deleteEventTeams(
+    @Body() data: { eventTeamId: string },
+  ): Promise<string> {
+    return await this.mainEventService.deleteEventTeams(data.eventTeamId);
   }
 }

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EventTeams } from './entities/event-teams.entities';
-import { In, Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { RegistrationService } from 'src/registration/registration.service';
 import {
   EventRegistrationDto,
@@ -328,6 +328,7 @@ export class MainEventService {
     return await this.eventTeamRepo.find({
       where: {
         event: eventHead.event,
+        eventMembers: { memberName: Not('') },
       },
       relations: [
         'eventMembers',
@@ -355,13 +356,19 @@ export class MainEventService {
       .getRawMany();
 
     const totalTeamCount = await this.eventTeamRepo.count({
-      where: { event: eventHead.event },
+      where: { event: eventHead.event, eventMembers: { memberName: Not('') } },
     });
     const currentRound = await this.eventService.getCurrentRound(
       eventHead.event.eventId,
     );
     const activeTeams = await this.teamScoreRepo.count({
-      where: { eventTeam: { event: eventHead.event }, roundNo: currentRound },
+      where: {
+        eventTeam: {
+          event: eventHead.event,
+          eventMembers: { memberName: Not('') },
+        },
+        roundNo: currentRound,
+      },
     });
 
     const cardDetailsList: CardDetailsDto[] = [];
@@ -462,5 +469,56 @@ export class MainEventService {
     });
     await this.eventTeamRepo.remove(eventTeams);
     return await this.registrationService.deleteRegistration(registrationId);
+  }
+
+  async getEventMembersFromRegistration(
+    registrationId: string,
+  ): Promise<EventMembers[]> {
+    return await this.eventMemberRepo
+      .createQueryBuilder('eventMember')
+      .leftJoinAndSelect('eventMember.eventTeam', 'eventTeam')
+      .leftJoinAndSelect('eventTeam.registration', 'registration')
+      .leftJoinAndSelect('registration.user', 'user')
+      .leftJoinAndSelect('registration.college', 'college')
+      .leftJoinAndSelect('eventTeam.event', 'event')
+      .where('registration.registrationId = :registrationId', {
+        registrationId,
+      })
+      .orderBy('event.orderNo', 'ASC') // Order by the event name
+      .orderBy('memberName', 'ASC')
+      .getMany();
+  }
+
+  async deleteEventMember(eventMemberId: string): Promise<string> {
+    const memberTeam = await this.eventMemberRepo.findOne({
+      where: { eventMemberId: eventMemberId },
+    });
+    await this.eventMemberRepo.remove(memberTeam);
+    return 'Successfully deleted the event member';
+  }
+
+  async getEmptyEventTeams(): Promise<EventTeams[]> {
+    const newList = [];
+    const eventTeams = await this.eventTeamRepo.find({
+      relations: ['eventMembers'],
+    });
+    eventTeams?.map((ele) => {
+      if (ele?.eventMembers?.length == 0) {
+        newList.push(ele);
+      }
+    });
+    return newList;
+  }
+
+  async deleteEventTeams(eventTeamId: string): Promise<string> {
+    const eventTeamScore = await this.teamScoreRepo.find({
+      where: { eventTeam: { eventTeamId: eventTeamId } },
+    });
+    await this.teamScoreRepo.remove(eventTeamScore);
+    const eventTeam = await this.eventTeamRepo.findOne({
+      where: { eventTeamId: eventTeamId },
+    });
+    await this.eventTeamRepo.remove(eventTeam);
+    return 'Successfully deleted the event team';
   }
 }
