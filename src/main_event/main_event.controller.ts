@@ -166,4 +166,14 @@ export class MainEventController {
       registrationData,
     );
   }
+
+  @UseGuards(SuperUserAuthGuard)
+  @Post('/v1/DeleteRegistrationDetails')
+  async deleteRegistration(
+    @Body() data: { registrationId: string },
+  ): Promise<string> {
+    return await this.mainEventService.deleteRegistrationDetails(
+      data.registrationId,
+    );
+  }
 }

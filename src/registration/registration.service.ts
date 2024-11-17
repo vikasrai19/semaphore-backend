@@ -165,4 +165,12 @@ export class RegistrationService {
     await this.registrationRepo.save(teamData);
     return 'Successfully updated the team data';
   }
+
+  async deleteRegistration(registrationId: string): Promise<string> {
+    const registration = await this.registrationRepo.findOne({
+      where: { registrationId: registrationId },
+    });
+    await this.registrationRepo.remove(registration);
+    return 'Successfully deleted the registration';
+  }
 }

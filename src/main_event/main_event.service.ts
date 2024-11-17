@@ -437,4 +437,30 @@ export class MainEventService {
     });
     return eventTeams;
   }
+
+  async deleteRegistrationDetails(registrationId: string): Promise<string> {
+    const eventTeams = await this.eventTeamRepo.find({
+      where: { registration: { registrationId: registrationId } },
+    });
+    const paymentDetails = await this.paymentRepo.find({
+      where: { registration: { registrationId: registrationId } },
+    });
+    await this.paymentRepo.remove(paymentDetails);
+    eventTeams.map(async (ele) => {
+      const eventMembers = await this.eventMemberRepo.find({
+        where: { eventTeam: ele },
+      });
+      const teamScores = await this.teamScoreRepo.find({
+        where: { eventTeam: ele },
+      });
+      if (teamScores !== null) {
+        await this.teamScoreRepo.remove(teamScores);
+      }
+      if (eventMembers !== null) {
+        await this.eventMemberRepo.remove(eventMembers);
+      }
+    });
+    await this.eventTeamRepo.remove(eventTeams);
+    return await this.registrationService.deleteRegistration(registrationId);
+  }
 }
