@@ -209,4 +209,10 @@ export class MainEventController {
   ): Promise<string> {
     return await this.mainEventService.deleteEventTeams(data.eventTeamId);
   }
+
+  @UseGuards(AccoladesAuthGuard)
+  @Get('/v1/GetTeamMembersForAccolades')
+  async getTeamMembers(@Query('teamId') teamId: string): Promise<EventTeams> {
+    return await this.mainEventService.getTeamMembersForAccolades(teamId);
+  }
 }

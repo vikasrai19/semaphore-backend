@@ -422,11 +422,12 @@ export class MainEventService {
       .addSelect('registration.teamName', 'teamName')
       .addSelect('college.collegeName', 'collegeName')
       .addSelect('event.eventName', 'eventName')
+      .addSelect('eventTeam.eventTeamId', 'teamId')
       .addSelect('SUM(teamScores.score)', 'totalScore')
       .addSelect('MAX(roundNo)', 'maxRound')
       .where('eventTeam.event.eventId = :eventId', { eventId: eventId })
       .groupBy(
-        'registration.registrationId, college.collegeName, registration.teamName, event.eventName',
+        'registration.registrationId, college.collegeName, registration.teamName, event.eventName, eventTeam.eventTeamId',
       )
       .orderBy('totalScore', 'DESC')
       .getRawMany();
@@ -520,5 +521,12 @@ export class MainEventService {
     });
     await this.eventTeamRepo.remove(eventTeam);
     return 'Successfully deleted the event team';
+  }
+
+  async getTeamMembersForAccolades(teamId: string): Promise<EventTeams> {
+    return await this.eventTeamRepo.findOne({
+      where: { eventTeamId: teamId },
+      relations: ['eventMembers'],
+    });
   }
 }
